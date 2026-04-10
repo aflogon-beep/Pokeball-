@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="theme-color" content="#0F172A"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="PokéBattle"/>
+<meta name="description" content="PokéBattle — Combates Pokémon Generación 1"/>
+<title>PokéBattle</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- 1. Audio (SFX, music, Web Audio API) -->
+<script src="js/audio.js"></script>
+
+<!-- 2. Game data (Pokémon, moves, types, Pokédex) -->
+<script src="js/data.js"></script>
+
+<!-- 3. Scenarios (SVG data + Canvas animated scenes) -->
+<script src="js/scenarios/scenes.js"></script>
+<script src="js/scenarios/canvas-scenes.js"></script>
+
+<!-- 4. UI Screens (all game screens) -->
+<script src="js/ui/screens.js"></script>
+
+<!-- 5. Battle engine (combat logic, CPU AI) -->
+<script src="js/battle.js"></script>
+
+<!-- 6. Sprites & animations -->
+<script src="js/sprites.js"></script>
+
+<!-- 7. Main (state, router, render — boots last) -->
+<script src="js/main.js"></script>
+
+<!-- PWA Service Worker -->
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(()=>console.log('[SW] registered'))
+      .catch(e=>console.log('[SW] error:',e));
+  });
+}
+</script>
+</body>
+</html>
