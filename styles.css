@@ -1,0 +1,86 @@
+/* PokéBattle Styles */
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Roboto',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;font-size:14px;}
+html,body{height:100%;overflow:hidden;background:#000;}
+/* Font roles:
+   Nunito     → body, descriptions, labels, UI text (12-16px)
+   Rajdhani   → section titles, trainer names, headers
+   Impact     → combat labels, HP bars, K.O. (legacy, loud)
+   Press Start 2P → damage numbers, pixel effects
+*/
+#app{position:fixed;inset:0;overflow:hidden;}
+/* SF-style HP bar */
+.sf-hpbar-wrap{flex:1;height:22px;background:#1a0000;border:2px solid rgba(255,255,255,.2);border-radius:3px;overflow:hidden;position:relative;box-shadow:inset 0 2px 4px rgba(0,0,0,.5);}
+.sf-hpbar-fill{position:absolute;top:0;bottom:0;height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.sf-hpbar-fill.r{right:0;left:auto;}
+.sf-name{font-family:'Rajdhani',Impact,sans-serif;font-size:min(1rem,2.8vw);letter-spacing:.08em;text-transform:uppercase;font-weight:700;}
+/* Move buttons SF style */
+.mv-btn{border:none;cursor:pointer;font-family:'Roboto',sans-serif;font-weight:900;text-align:left;color:#fff;position:relative;overflow:hidden;transition:filter .1s,transform .1s;border-radius:6px;}
+.mv-btn:active{transform:scale(.93);filter:brightness(.8);}
+.mv-btn[disabled]{opacity:.35;cursor:not-allowed;filter:saturate(.1);}
+
+@keyframes shake{0%,100%{transform:translateX(0)}10%{transform:translateX(-16px)}25%{transform:translateX(16px)}40%{transform:translateX(-12px)}55%{transform:translateX(12px)}70%{transform:translateX(-6px)}85%{transform:translateX(6px)}}
+@keyframes flashW{0%,100%{filter:brightness(1)}25%{filter:brightness(15) saturate(0)}75%{filter:brightness(15) saturate(0)}}
+@keyframes floatup{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.9}}
+@keyframes conffall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(540deg);opacity:0}}
+@keyframes ripple{0%{transform:scale(0);opacity:.8}100%{transform:scale(5);opacity:0}}
+@keyframes dmgFloat{0%{transform:translateY(0) scale(1.3);opacity:1}40%{transform:translateY(-35px) scale(1.5);opacity:1}100%{transform:translateY(-90px) scale(.9);opacity:0}}
+@keyframes msgPop{0%{transform:translate(-50%,-50%) scale(.7);opacity:0}70%{transform:translate(-50%,-50%) scale(1.05)}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+@keyframes msgPop2{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes msgFade{0%{opacity:1}100%{opacity:0}}
+@keyframes hpAnim{0%{filter:brightness(1.8)}100%{filter:brightness(1)}}
+@keyframes cloudDrift{from{transform:translateX(0)}to{transform:translateX(-200px)}}
+@keyframes starTwinkle{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+@keyframes coolPulse{0%,100%{opacity:.4}50%{opacity:.75}}
+@keyframes pkEnter1{from{transform:translateX(-180px) scaleX(-1);opacity:0}to{transform:translateX(0) scaleX(-1);opacity:1}}
+@keyframes pkEnter2{from{transform:translateX(180px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes battleIntro{0%{opacity:0;transform:scale(1.3)}40%{opacity:1;transform:scale(1.05)}70%{transform:scale(.98)}100%{transform:scale(1)}}
+@keyframes vsSlam{0%{transform:scale(0) rotate(-20deg);opacity:0}50%{transform:scale(1.4) rotate(5deg);opacity:1}70%{transform:scale(.9) rotate(-2deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes p1Slide{from{transform:translateX(-120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes p2Slide{from{transform:translateX(120%)}to{transform:translateX(0)}}
+@keyframes poisonPulse{0%,100%{filter:hue-rotate(0deg) saturate(1)}50%{filter:hue-rotate(60deg) saturate(2) brightness(.85)}}
+@keyframes paralysePulse{0%,100%{filter:brightness(1)}15%{filter:brightness(2) saturate(0)}30%{filter:brightness(1)}}
+@keyframes sleepFloat{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-8px)}}
+@keyframes sleepFloat2{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes burnFlicker{0%,100%{filter:brightness(1) saturate(1)}30%{filter:brightness(1.4) saturate(2) hue-rotate(-20deg)}60%{filter:brightness(.9) saturate(1.5)}}
+@keyframes statusBadge{0%{transform:translateY(-20px) scale(0);opacity:0}60%{transform:translateY(4px) scale(1.1)}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes zzzFloat{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(20px,-30px) scale(.5);opacity:0}}
+@keyframes sfBurst{0%{transform:translate(-50%,-50%) scale(0);opacity:1}60%{opacity:.9}100%{transform:translate(-50%,-50%) scale(2.5);opacity:0}}
+@keyframes sfStar{0%{transform:translate(-50%,-50%) rotate(0) scale(0);opacity:1}100%{transform:translate(-50%,-50%) rotate(180deg) scale(1.8);opacity:0}}
+@keyframes sfSlash{0%{transform:scaleX(0);opacity:1}100%{transform:scaleX(1.5);opacity:0}}
+@keyframes sfShock{0%,100%{opacity:0}10%,30%,50%,70%,90%{opacity:1}20%,40%,60%,80%{opacity:.3}}
+
+@keyframes pkSlideInLeft{0%{transform:scaleX(-1) translateX(-120px);opacity:0}60%{transform:scaleX(-1) translateX(10px);opacity:1}80%{transform:scaleX(-1) translateX(-5px)}100%{transform:scaleX(-1) translateX(0);opacity:1}}
+@keyframes pkSlideInRight{0%{transform:translateX(120px);opacity:0}60%{transform:translateX(-10px);opacity:1}80%{transform:translateX(5px)}100%{transform:translateX(0);opacity:1}}
+@keyframes pkFlashIn{0%{filter:brightness(8) saturate(0)}30%{filter:brightness(3) saturate(.5)}100%{filter:brightness(1) saturate(1)}}
+@keyframes pkBounce{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-7px)}}
+@keyframes pkBounce2{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes splashSpin{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.1)}100%{transform:rotate(360deg) scale(1)}}
+@keyframes splashFadeIn{0%{opacity:0;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}
+@keyframes splashFadeOut{0%{opacity:1}100%{opacity:0;pointer-events:none}}
+@keyframes battleLogSlide{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 8px rgba(59,130,246,.4)}50%{box-shadow:0 0 22px rgba(59,130,246,.9),0 0 40px rgba(59,130,246,.4)}}
+@keyframes idleBreath{0%,100%{transform:scaleX(-1) scale(1)}50%{transform:scaleX(-1) scale(1.03)}}
+@keyframes idleBreath2{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+
+@keyframes sfRecoil{0%,100%{transform:scaleX(-1) translateX(0)}30%{transform:scaleX(-1) translateX(22px)}}
+@keyframes sfRecoil2{0%,100%{transform:translateX(0)}30%{transform:translateX(-22px)}}
+
+.btn{border:none;border-radius:16px;font-family:'Roboto',sans-serif;font-weight:700;font-size:1rem;padding:15px;cursor:pointer;min-height:54px;width:100%;color:#fff;transition:transform .12s,filter .12s;line-height:1.3;display:block;text-align:center;}
+.px{font-family:'Press Start 2P',monospace;}
+.btn:active{transform:scale(.92);filter:brightness(.82);}
+.btn[disabled]{background:#1E293B!important;color:#475569!important;cursor:not-allowed;transform:none;}
+.bdg{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.62rem;font-weight:800;margin-right:3px;text-transform:uppercase;letter-spacing:.03em;}
+.pkcard{background:#fff;border-radius:18px;padding:12px 8px 10px;border:3px solid transparent;cursor:pointer;text-align:center;transition:all .15s;box-shadow:0 3px 10px rgba(0,0,0,.1);}
+.pkcard:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.15);}
+.pkcard.sel{border-color:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,.3);transform:translateY(-2px);}
+.pkcard.dis{opacity:.3;cursor:not-allowed;transform:none;}
+.mkbar{flex:1;height:20px;background:#111827;border-radius:6px;overflow:hidden;border:2px solid rgba(255,255,255,.12);position:relative;}
+.mkbar-fill{position:absolute;top:0;bottom:0;left:0;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1);animation:hpAnim .4s ease;}
+.mkbar-fill.r{left:auto;right:0;}
+.movebtn{border:none;border-radius:14px;padding:13px 10px;cursor:pointer;font-weight:800;text-align:left;min-height:64px;color:#fff;transition:transform .1s;position:relative;overflow:hidden;}
+.movebtn:active:not([disabled]){transform:scale(.92);}
+.movebtn[disabled]{opacity:.4;cursor:not-allowed;filter:saturate(.2);}
+.cdoverlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;animation:coolPulse 1s infinite;}
