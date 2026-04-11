@@ -213,7 +213,7 @@ create(){
             ${[["👦 TRAINER",0],["🧙 EXPERTO",8],["⚡ ELEMENTO",16],["🦊 ANIMAL",24],["😎 ESTILO",32],["🚀 EXTRA",40]].map(([lbl,st])=>`<button onclick="G._avCat=${st};render()" style="border:none;cursor:pointer;white-space:nowrap;font-family:'Roboto',sans-serif;font-size:.58rem;font-weight:700;padding:4px 8px;border-radius:20px;background:${(G._avCat||0)===st?accentCol:'rgba(255,255,255,.1)'};color:${(G._avCat||0)===st?'#fff':'rgba(255,255,255,.45)'};">${lbl}</button>`).join("")}
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
-            ${A.slice(G._avCat||0,(G._avCat||0)+8).map((em,i)=>{const idx=(G._avCat||0)+i;const sel=av===idx;return`<button onclick="sfxSel();G['av'+${isP2?2:1}]=${idx};render()" style="background:${sel?'rgba(59,130,246,.25)':'rgba(255,255,255,.06)'};border:2px solid ${sel?accentCol:'rgba(255,255,255,.1)'};border-radius:12px;font-size:min(1.8rem,6.5vw);padding:8px 4px;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;${sel?'transform:scale(1.1)':''}">\${em}</button>`;}).join("")}
+            ${A.slice(G._avCat||0,(G._avCat||0)+8).map((em,i)=>{const idx=(G._avCat||0)+i;const sel=av===idx;return`<button onclick="sfxSel();G['av'+${isP2?2:1}]=${idx};render()" style="background:${sel?'rgba(59,130,246,.25)':'rgba(255,255,255,.06)'};border:2px solid ${sel?accentCol:'rgba(255,255,255,.1)'};border-radius:12px;font-size:min(1.8rem,6.5vw);padding:8px 4px;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;${sel?'transform:scale(1.1)':''}">"+em+"</button>`;}).join("")}
           </div>
         </div>
         <!-- CTA button -->
@@ -445,7 +445,7 @@ battle(){
   if(typeof initCanvasScene==='function'){
     setTimeout(()=>initCanvasScene(sc.name),30);
   }
-  const arena=`<div id="arena" style="position:relative;overflow:hidden;flex-shrink:0;height:44vh;min-height:180px;max-height:320px;">
+  const arena=`<div id="arena" style="position:relative;overflow:hidden;flex:1;min-height:0;">
     <canvas id="scene-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;min-height:0;"></canvas>
     <!-- ground shadow overlay for depth -->
     <div style="position:absolute;bottom:0;left:0;right:0;height:${sc.groundH+5}%;background:linear-gradient(0deg,rgba(0,0,0,.35) 0%,transparent 100%);pointer-events:none;z-index:1;"></div>
@@ -473,17 +473,13 @@ battle(){
   let ac="";
   if(!b.locked){
     if(b.ph==="action"){
-      const turnBanner=G.mode==="cpu"&&!b.locked?`<span style="font-family:'Roboto',sans-serif;font-size:.7rem;font-weight:700;color:#60A5FA;letter-spacing:.1em;">⚔ TU TURNO — ${G.p1.name.toUpperCase()}</span>`:"";
-      // Restore battle log in blog-zone
-      setTimeout(()=>{const bz=document.getElementById("blog-zone");const bl=document.getElementById("blog");if(bz&&bl&&bz.firstChild!==bl){bz.innerHTML="";const bd=document.createElement("div");bd.id="blog";bd.style.cssText="padding:6px 10px;display:flex;flex-direction:column;gap:3px;height:100%;";bz.appendChild(bd);updateBattleLog();}if(turnBanner){const tb2=document.createElement("div");tb2.style.cssText="text-align:center;padding:3px 0;background:linear-gradient(90deg,transparent,rgba(59,130,246,.12),transparent);border-bottom:1px solid rgba(59,130,246,.15);";tb2.innerHTML=turnBanner;bz&&bz.prepend(tb2);}},0);
-      ac=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0;background:rgba(10,18,36,.98);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;">
-        <button class="btn" style="background:linear-gradient(180deg,#2563EB,#1D4ED8);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('attack')">⚔ ATACAR</button>
-        <button class="btn" style="background:linear-gradient(180deg,#1565C0,#0D47A1);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('switch')">↕ CAMBIAR</button>
-        <button class="btn" onclick="usePotion()" style="background:${b.potions1?'linear-gradient(180deg,#065f46,#047857)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.78rem;font-weight:700;padding:14px 4px;color:${b.potions1?'#4ade80':'rgba(255,255,255,.2)'};">💊${b.potions1?'':'✗'}</button>
+      ac=(turnBanner||"")+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0;background:rgba(10,18,36,.98);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;">
+        <button class="btn" style="background:linear-gradient(180deg,#2563EB,#1D4ED8);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.04em;padding:14px 4px;" onclick="sfxMenu();bPh('attack')">⚔ ATACAR</button>
+        <button class="btn" style="background:linear-gradient(180deg,#1565C0,#0D47A1);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.04em;padding:14px 4px;" onclick="sfxMenu();bPh('switch')">↕ CAMBIAR</button>
+        <button class="btn" onclick="usePotion()" style="background:${b.potions1?'linear-gradient(180deg,#065f46,#047857)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.78rem;font-weight:700;padding:14px 4px;color:${b.potions1?'#4ade80':'rgba(255,255,255,.2)'}" title="Poción: +30HP">💊${b.potions1?'':'✗'}</button>
         <button class="btn" onclick="dSave()" style="background:rgba(15,23,42,.9);border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">💾</button>
         <button id="exit-confirm" data-step="0" class="btn" onclick="exitBattle()" style="background:rgba(15,23,42,.9);border-radius:0;font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">🚪</button>
       </div>`;
-    } else if(b.ph==="attack"){
       const defPk=b.ct==="p1"?pk2:pk1;
       const effLabels={2:"▲ SÚPER EFECTIVO",0.5:"▼ POCO EFECTIVO",0:"✗ SIN EFECTO"};
       const effColors={2:"#FCD34D",0.5:"#93C5FD",0:"#6B7280"};
@@ -589,20 +585,16 @@ battle(){
           <div style="font-size:.6rem;color:${d?"#333":"#666"};">${pk.currentHp}/${pk.hp}</div>
         </button>`;
       }).join("");
-      setTimeout(()=>{const bz=document.getElementById("blog-zone");if(bz)bz.innerHTML=`<div style="padding:6px 8px;height:100%;overflow-y:auto;"><div style="font-family:'Roboto',sans-serif;font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:5px;letter-spacing:.06em;">ELIGE POKÉMON</div><div style="display:flex;gap:5px;">${pks}</div></div>`;},0);
-      ac=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0;background:rgba(10,18,36,.98);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;">
-        <button class="btn" style="background:linear-gradient(180deg,#2563EB,#1D4ED8);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('attack')">⚔ ATACAR</button>
-        <button class="btn" style="background:linear-gradient(180deg,#1565C0,#0D47A1);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('switch')">↕ CAMBIAR</button>
-        <button class="btn" onclick="usePotion()" style="background:\${b.potions1?'linear-gradient(180deg,#065f46,#047857)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.78rem;font-weight:700;padding:14px 4px;color:\${b.potions1?'#4ade80':'rgba(255,255,255,.2)'};">💊\${b.potions1?'':'✗'}</button>
-        <button class="btn" onclick="dSave()" style="background:rgba(15,23,42,.9);border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">💾</button>
-        <button id="exit-confirm" data-step="0" class="btn" onclick="exitBattle()" style="background:rgba(15,23,42,.9);border-radius:0;font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">🚪</button>
+      ac=`<div style="background:#0a0a0a;border-top:2px solid #222;flex-shrink:0;padding:8px 10px;">
+        <div style="display:flex;gap:6px;margin-bottom:6px;">${pks}</div>
+        <button class="btn" onclick="sfxMenu();bPh('action')" style="background:rgba(15,23,42,.9);border:1px solid rgba(59,130,246,.2);font-size:.85rem;padding:10px;border-radius:6px;color:#60A5FA;">← ATRÁS</button>
       </div>`;
     }
   } else {
     ac=`<div style="padding:14px;background:#0a0a0a;border-top:2px solid #222;text-align:center;flex-shrink:0;"><span style="font-family:'Roboto',sans-serif;color:rgba(96,165,250,.4);font-size:.9rem;font-weight:700;letter-spacing:.1em;">COMBATIENDO...</span></div>`;
   }
 
-  const blogPanel=`<div id="blog-zone" style="flex:1;min-height:80px;max-height:140px;background:rgba(5,10,25,.95);border-top:1px solid rgba(59,130,246,.15);overflow:hidden;flex-shrink:0;"><div id="blog" style="padding:6px 10px;display:flex;flex-direction:column;gap:3px;height:100%;"></div></div>`;
+  const blogPanel=`<div id="blog" style="background:rgba(5,10,25,.92);border-top:1px solid rgba(59,130,246,.15);padding:4px 8px;display:flex;flex-direction:column;gap:2px;min-height:28px;max-height:90px;overflow:hidden;flex-shrink:0;"></div>`;
   const tb=G.mode==="pvp"&&!b.locked?`<div style="text-align:center;padding:4px;background:#0a0a0a;"><span style="background:#F59E0B;color:#000;font-family:'Roboto',sans-serif;font-size:.85rem;font-weight:700;padding:3px 16px;border-radius:3px;letter-spacing:.06em;">TURNO: ${G[b.ct==="p1"?"p1":"p2"].name.toUpperCase()}</span></div>`:"";
 
   // Show enter quotes ONCE per battle (not on every render)
@@ -619,7 +611,7 @@ battle(){
       }
     }
   },100);
-  return`<div style="background:#000;display:flex;flex-direction:column;position:absolute;inset:0;overflow:hidden;">${sfTop}${arena}${blogPanel}${ac}</div>`;
+  return`<div style="background:#000;display:flex;flex-direction:column;position:absolute;inset:0;overflow:hidden;">${sfTop}${arena}${blogPanel}${tb}${ac}</div>`;
 },
 
 victory(){
