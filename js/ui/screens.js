@@ -11,19 +11,18 @@ intro(){
   const team1imgs=t1.map(pk=>`
     <div style="text-align:center;flex:1;min-width:0;">
       <img src="${su(pk.id)}" style="${pkImg};object-fit:contain;display:block;margin:0 auto;">
-      <div style="color:#fff;font-weight:800;font-size:min(.82rem,3.5vmin);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pk.name}</div>
+      <div style="color:#fff;font-weight:800;font-size:min(.7rem,3vmin);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pk.name}</div>
       <div style="margin-top:2px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;">${pk.types.map(t=>bdg(t)).join("")}</div>
     </div>`).join("");
   const team2imgs=t2.map(pk=>`
     <div style="text-align:center;flex:1;min-width:0;">
       <img src="${su(pk.id)}" style="${pkImg};object-fit:contain;display:block;margin:0 auto;">
-      <div style="color:#fff;font-weight:800;font-size:min(.82rem,3.5vmin);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pk.name}</div>
+      <div style="color:#fff;font-weight:800;font-size:min(.7rem,3vmin);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pk.name}</div>
       <div style="margin-top:2px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;">${pk.types.map(t=>bdg(t)).join("")}</div>
     </div>`).join("");
   startMusic();
-  if(typeof initCanvasScene==='function'){setTimeout(()=>initCanvasScene(sc?sc.name:'campo','intro-canvas'),30);}
   return`<div style="position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column;">
-    <canvas id="intro-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas>
+    ${sceneSVG(sc,100,100)}
     <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.2) 50%,rgba(0,0,0,.75) 100%);"></div>
     <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:min(16px,3%) min(12px,2%);">
       <!-- Title -->
@@ -263,7 +262,7 @@ select(){
       const dexText=(DEX[String(pk.id)]||DEX[pk.id]||"Un Pokémon misterioso del que poco se sabe.");
       const typeIcon={fire:"🔥",water:"💧",grass:"🌿",electric:"⚡",psychic:"🔮",normal:"⭐",fighting:"👊",poison:"☠️",ground:"🌍",flying:"🌪️",rock:"🪨",ice:"❄️",bug:"🐛",ghost:"👻",dragon:"🐉"}[pk.types[0]]||"✨";
       const weakMap={fire:"💧",water:"⚡",grass:"🔥",electric:"🌍",psychic:"👻",normal:"👊",fighting:"🔮",poison:"🌍",ground:"💧",flying:"⚡",rock:"💧",ice:"🔥",bug:"🔥",ghost:"👻",dragon:"❄️"};
-      const sb=(val,col,lbl)=>`<div style="margin-bottom:4px;"><div style="display:flex;justify-content:space-between;margin-bottom:1px;"><span style="font-family:'Roboto',sans-serif;font-size:.7rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.04em;">${lbl}</span><span style="font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:700;color:rgba(255,255,255,.9);">${val}</span></div><div style="height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;"><div style="width:${Math.min(100,val/160*100)}%;height:100%;background:${col};border-radius:2px;"></div></div></div>`;
+      const sb=(val,col,lbl)=>`<div style="margin-bottom:4px;"><div style="display:flex;justify-content:space-between;margin-bottom:1px;"><span style="font-family:'Roboto',sans-serif;font-size:.58rem;font-weight:700;color:rgba(0,0,0,.45);letter-spacing:.05em;">${lbl}</span><span style="font-family:'Rajdhani',sans-serif;font-size:.82rem;font-weight:700;color:rgba(0,0,0,.6);">${val}</span></div><div style="height:4px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden;"><div style="width:${Math.min(100,val/160*100)}%;height:100%;background:${col};border-radius:2px;"></div></div></div>`;
       modal=`<div onclick="G.modal=null;render()" style="position:absolute;inset:0;background:rgba(0,0,0,.85);z-index:50;display:flex;align-items:center;justify-content:center;padding:10px;">
         <div onclick="event.stopPropagation()" style="width:min(300px,90vw);max-height:90vh;overflow-y:auto;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.8),0 0 0 3px ${tc0.bg},0 0 0 6px rgba(255,215,0,.6);animation:vsSlam .3s ease both;">
           <!-- Header -->
@@ -271,7 +270,7 @@ select(){
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
               <div style="display:flex;align-items:center;gap:6px;">
                 <span style="background:rgba(255,255,255,.25);color:#fff;font-family:'Roboto',sans-serif;font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:3px;letter-spacing:.06em;">BÁSICO</span>
-                <span style="font-family:'Rajdhani',sans-serif;font-size:min(1.4rem,6vw);color:#fff;font-weight:700;">${pk.name.toUpperCase()}</span>
+                <span style="font-family:'Rajdhani',sans-serif;font-size:min(1.2rem,5vw);color:#fff;font-weight:700;">${pk.name.toUpperCase()}</span>
               </div>
               <div style="display:flex;align-items:center;gap:2px;">
                 <span style="font-family:'Roboto',sans-serif;font-size:.6rem;font-weight:700;color:rgba(255,255,255,.8);">PS</span>
@@ -288,13 +287,13 @@ select(){
             <div style="position:absolute;bottom:4px;right:8px;font-family:'Roboto',sans-serif;font-size:.5rem;color:rgba(0,0,0,.35);">N°${String(pk.id).padStart(3,'0')} · Altura y Peso desconocidos</div>
           </div>
           <!-- Body -->
-          <div style="background:#1a1a2e;padding:10px 12px;">
+          <div style="background:#f5ead0;padding:10px 12px;">
             <!-- Dex text -->
-            <div style="background:rgba(255,255,255,.07);border-radius:7px;padding:8px 10px;margin-bottom:8px;border-left:3px solid ${tc0.bg};">
-              <div style="font-family:'Roboto',sans-serif;font-size:.84rem;color:rgba(255,255,255,.85);line-height:1.55;font-style:italic;">"${dexText}"</div>
+            <div style="background:rgba(255,255,255,.55);border-radius:7px;padding:7px 9px;margin-bottom:8px;border-left:3px solid ${tc0.bg};">
+              <div style="font-family:'Roboto',sans-serif;font-size:.7rem;color:rgba(0,0,0,.6);line-height:1.5;font-style:italic;">"${dexText}"</div>
             </div>
             <!-- Stats -->
-            <div style="background:rgba(255,255,255,.06);border-radius:7px;padding:8px 10px;margin-bottom:8px;border:1px solid rgba(255,255,255,.08);">
+            <div style="background:rgba(255,255,255,.45);border-radius:7px;padding:8px 10px;margin-bottom:8px;">
               ${sb(pk.hp,"#22C55E","HP")}
               ${sb(pk.atk,"#EF4444","ATAQUE")}
               ${sb(pk.def,"#3B82F6","DEFENSA")}
@@ -302,13 +301,13 @@ select(){
             </div>
             <!-- Moves -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
-              ${(pk.moves||[]).filter(m=>m&&m.n&&m.p>0).slice(0,4).map(m=>`<div style="background:linear-gradient(135deg,${(TC[m.t]||TC.normal).bg},${(TC[m.t]||TC.normal).grd});border-radius:7px;padding:6px 7px;"><div style="font-family:'Roboto',sans-serif;font-weight:700;font-size:.76rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.n}</div><div style="font-size:.56rem;color:rgba(255,255,255,.7);margin-top:1px;">${bdg(m.t)} ${m.p}⚡ PP${m.pp}</div></div>`).join("")}
+              ${(pk.moves||[]).filter(m=>m&&m.n&&m.p>0).slice(0,4).map(m=>`<div style="background:linear-gradient(135deg,${(TC[m.t]||TC.normal).bg},${(TC[m.t]||TC.normal).grd});border-radius:7px;padding:6px 7px;"><div style="font-family:'Roboto',sans-serif;font-weight:700;font-size:.68rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.n}</div><div style="font-size:.56rem;color:rgba(255,255,255,.7);margin-top:1px;">${bdg(m.t)} ${m.p}⚡ PP${m.pp}</div></div>`).join("")}
             </div>
             <!-- Weakness row -->
             <div style="display:flex;gap:5px;margin-bottom:10px;">
-              <div style="flex:1;background:rgba(255,255,255,.07);border-radius:6px;padding:5px;text-align:center;border:1px solid rgba(255,255,255,.08);"><div style="font-family:'Roboto',sans-serif;font-size:.52rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:2px;">DEBILIDAD</div><div>${weakMap[pk.types[0]]||"⭐"} ×2</div></div>
-              <div style="flex:1;background:rgba(255,255,255,.07);border-radius:6px;padding:5px;text-align:center;border:1px solid rgba(255,255,255,.08);"><div style="font-family:'Roboto',sans-serif;font-size:.52rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:2px;">RESISTENCIA</div><div>-30</div></div>
-              <div style="flex:1;background:rgba(255,255,255,.07);border-radius:6px;padding:5px;text-align:center;border:1px solid rgba(255,255,255,.08);"><div style="font-family:'Roboto',sans-serif;font-size:.52rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:2px;">RETIRADA</div><div>${"⚪".repeat(Math.max(1,Math.min(4,Math.round(pk.hp/50))))}</div></div>
+              <div style="flex:1;background:rgba(255,255,255,.4);border-radius:6px;padding:5px;text-align:center;"><div style="font-family:'Roboto',sans-serif;font-size:.52rem;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:2px;">DEBILIDAD</div><div>${weakMap[pk.types[0]]||"⭐"} ×2</div></div>
+              <div style="flex:1;background:rgba(255,255,255,.4);border-radius:6px;padding:5px;text-align:center;"><div style="font-family:'Roboto',sans-serif;font-size:.52rem;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:2px;">RESISTENCIA</div><div>-30</div></div>
+              <div style="flex:1;background:rgba(255,255,255,.4);border-radius:6px;padding:5px;text-align:center;"><div style="font-family:'Roboto',sans-serif;font-size:.52rem;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:2px;">RETIRADA</div><div>${"⚪".repeat(Math.max(1,Math.min(4,Math.round(pk.hp/50))))}</div></div>
             </div>
             <!-- Buttons -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -319,8 +318,8 @@ select(){
             </div>
           </div>
           <!-- Footer -->
-          <div style="background:#0d0d1e;padding:5px 14px;border-radius:0 0 16px 16px;text-align:center;border-top:1px solid rgba(255,255,255,.06);">
-            <span style="font-family:'Roboto',sans-serif;font-size:.5rem;color:rgba(255,255,255,.25);">Illus. PokéBattle Studio · ${String(pk.id).padStart(3,'0')}/151 ©PokéBattle</span>
+          <div style="background:#e8d8b0;padding:5px 14px;border-radius:0 0 16px 16px;text-align:center;">
+            <span style="font-family:'Roboto',sans-serif;font-size:.5rem;color:rgba(0,0,0,.3);">Illus. PokéBattle Studio · ${String(pk.id).padStart(3,'0')}/151 ©PokéBattle</span>
           </div>
         </div>
       </div>`;
@@ -342,7 +341,7 @@ select(){
     </div>
     <!-- Grid -->
     <div style="flex:1;overflow-y:auto;padding:8px 8px 2px;">
-      ${filtered.length?`<div style="display:grid;grid-template-columns:repeat(${window.innerWidth<500?2:3},1fr);gap:8px;">${grid}</div>`:`<div style="text-align:center;padding:40px 20px;font-family:'Roboto',sans-serif;font-weight:700;font-size:1rem;color:rgba(96,165,250,.5);">SIN RESULTADOS</div>`}
+      ${filtered.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;">${grid}</div>`:`<div style="text-align:center;padding:40px 20px;font-family:'Roboto',sans-serif;font-weight:700;font-size:1rem;color:rgba(96,165,250,.5);">SIN RESULTADOS</div>`}
     </div>
     <!-- Bottom bar -->
     <div style="display:grid;grid-template-columns:auto 1fr;gap:0;background:#0a0a0a;border-top:2px solid #222;flex-shrink:0;">
@@ -390,48 +389,96 @@ battle(){
   const p1faint=pk1.currentHp<=0,p2faint=pk2.currentHp<=0;
 
   // ── SF-STYLE TOP BAR ──────────────────────────────────────
-  // ── POKÉMON-STYLE HUD — stacked bars ─────────────────────
+  // ── STREET FIGHTER IV STYLE HUD ──────────────────────────
   const hp1pct=Math.max(0,pk1.currentHp/pk1.hp*100);
   const hp2pct=Math.max(0,pk2.currentHp/pk2.hp*100);
-  const hpBarCol=(pct)=>pct>50?"#22C55E":pct>20?"#FACC15":"#EF4444";
-  const hudRow=(barId,pct,pk,trName,isP2)=>{
-    const col=hpBarCol(pct);
-    const teamDots=(isP2?b.t2:b.t1).map((p,i)=>`<div style="width:8px;height:8px;border-radius:50%;background:${p.currentHp>0?(p.status&&STATUS[p.status]?STATUS[p.status].color:"#22C55E"):"#1a1a1a"};outline:${i===(isP2?b.a2:b.a1)?"2px solid "+(isP2?"#93C5FD":"#FCD34D"):"1px solid #333"};outline-offset:1px;"></div>`).join("");
-    return`<div style="display:flex;align-items:center;gap:7px;padding:5px 8px;">
-      <div style="width:40px;height:40px;flex-shrink:0;border:2px solid ${isP2?"#3B6CB7":"#7a5a10"};border-radius:3px;overflow:hidden;background:#050505;">
-        <img src="${su(pk.id)}" style="width:120%;height:120%;object-fit:cover;object-position:center 10%;transform:${isP2?"none":"scaleX(-1)"};filter:saturate(1.2) contrast(1.05);">
+  // SF4 bar: yellow→orange→red gradient that shrinks from outside in
+  const barGrad1=hp1pct>50?"linear-gradient(90deg,#22C55E,#86efac,#22C55E)":hp1pct>25?"linear-gradient(90deg,#EF4444,#f97316,#FCD34D)":"linear-gradient(90deg,#991B1B,#EF4444,#ff6b6b)";
+  const barGrad2=hp2pct>50?"linear-gradient(270deg,#22C55E,#86efac,#22C55E)":hp2pct>25?"linear-gradient(270deg,#EF4444,#f97316,#FCD34D)":"linear-gradient(270deg,#991B1B,#EF4444,#ff6b6b)";
+  const sfTop=`<div id="sfbar" style="flex-shrink:0;background:linear-gradient(180deg,#1a0a00,#0d0500);border-bottom:3px solid #000;position:relative;overflow:hidden;">
+    <!-- Top metallic trim -->
+    <div style="height:3px;background:linear-gradient(90deg,#2a1500,#8B4513,#CD853F,#8B4513,#2a1500);"></div>
+    <!-- Main HUD -->
+    <div style="display:flex;align-items:center;padding:5px 6px 4px;gap:0;">
+
+      <!-- P1 portrait -->
+      <div style="width:min(44px,11vw);height:min(44px,11vw);flex-shrink:0;border:2px solid #8B4513;border-radius:3px;overflow:hidden;background:#000;position:relative;">
+        <img src="${su(pk1.id)}" style="width:130%;height:130%;object-fit:cover;object-position:center top;transform:translateX(-10%) scaleX(-1);filter:contrast(1.1) saturate(1.2);">
+        <div style="position:absolute;inset:0;box-shadow:inset 0 0 8px rgba(0,0,0,.8);"></div>
       </div>
-      <div style="flex:1;min-width:0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-          <span style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:min(1rem,4.2vw);color:${isP2?"#93C5FD":"#FCD34D"};letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38%;">${trName.toUpperCase()}</span>
-          <span style="font-family:'Roboto',sans-serif;font-size:min(.72rem,3vw);color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.03em;">${pk.shiny?"✨":""}${pk.name}</span>
-          <span style="font-family:'Press Start 2P',monospace;font-size:min(.52rem,2.1vw);color:${col};text-shadow:0 0 6px ${col}44;">${pk.currentHp}/${pk.hp}</span>
-        </div>
-        <div style="position:relative;height:11px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.1);border-radius:3px;overflow:hidden;">
-          <div id="${barId}" style="position:absolute;${isP2?"right":"left"}:0;top:0;bottom:0;width:${pct.toFixed(1)}%;background:${col};transition:width .5s ease,background .4s ease;">
-            <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(180deg,rgba(255,255,255,.3),transparent);"></div>
+
+      <!-- P1 HP section -->
+      <div style="flex:1;padding:0 5px;min-width:0;">
+        <!-- Name SF style: italic, gold -->
+        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:min(.85rem,3.5vw);color:#FCD34D;font-style:italic;letter-spacing:.06em;text-shadow:1px 1px 0 #000,-1px -1px 0 #000,0 0 8px rgba(252,211,77,.4);white-space:nowrap;overflow:hidden;margin-bottom:3px;">${G.p1.name.toUpperCase()}</div>
+        <!-- HP bar container SF4 style -->
+        <div style="position:relative;height:min(13px,3.5vw);background:#111;border:1px solid #444;border-radius:2px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.8);">
+          <!-- Dark backing -->
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,#1a0000,#000);"></div>
+          <!-- HP fill — grows LEFT to RIGHT -->
+          <div id="hpbar1" style="position:absolute;left:0;top:0;bottom:0;width:${hp1pct.toFixed(1)}%;background:${barGrad1};transition:width .5s cubic-bezier(.4,0,.2,1),background .4s ease;box-shadow:0 0 8px rgba(34,197,94,.5);">
+            <!-- Shine -->
+            <div style="position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.3),transparent);border-radius:2px 2px 0 0;"></div>
+          </div>
+          <!-- HP text overlay -->
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;">
+            <span style="font-family:'Press Start 2P',monospace;font-size:min(.45rem,1.5vw);color:rgba(255,255,255,.9);text-shadow:1px 1px 2px #000;">${pk1.currentHp}</span>
           </div>
         </div>
-        <div style="display:flex;gap:3px;margin-top:3px;${isP2?"justify-content:flex-end":""}">
-          ${teamDots}${statusBadge(pk.status)}
+        <!-- Pokemon name + status + dots -->
+        <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">
+          <span style="font-family:'Press Start 2P',monospace;font-size:min(.38rem,1.2vw);color:rgba(255,255,255,.5);letter-spacing:.02em;">${pk1.shiny?"✨":""}${pk1.name.slice(0,9).toUpperCase()}</span>
+          ${statusBadge(pk1.status)}
+          <div style="display:flex;gap:2px;margin-left:auto;">
+            ${b.t1.map((pk,i)=>`<div style="width:8px;height:8px;border-radius:50%;background:${pk.currentHp>0?"#22C55E":"#333"};outline:${i===b.a1?"1.5px solid #FCD34D":"1px solid #444"};outline-offset:1px;"></div>`).join("")}
+          </div>
         </div>
       </div>
-    </div>`;
-  };
-  const sfTop=`<div id="sfbar" style="flex-shrink:0;background:#070710;border-bottom:1px solid rgba(255,255,255,.06);">
-    ${hudRow("hpbar1",hp1pct,pk1,G.p1.name,false)}
-    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);margin:0 8px;"></div>
-    ${hudRow("hpbar2",hp2pct,pk2,G.p2.isCPU?"CPU":G.p2.name,true)}
+
+      <!-- CENTER: round timer + KO counter -->
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(42px,10vw);gap:1px;">
+        <div style="background:linear-gradient(180deg,#8B4513,#5C2A00);border:2px solid #CD853F;border-radius:4px;width:100%;text-align:center;padding:2px 0;box-shadow:0 2px 8px rgba(0,0,0,.6);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:min(.9rem,3vw);color:#FF6B00;text-shadow:0 0 10px #FF6B00,1px 1px 0 #000;line-height:1;">${b.st?b.st.moves:0}</div>
+        </div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:min(.5rem,1.8vw);color:#8B4513;font-weight:700;letter-spacing:.06em;">K·B</div>
+      </div>
+
+      <!-- P2 HP section (mirrored) -->
+      <div style="flex:1;padding:0 5px;min-width:0;">
+        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:min(.85rem,3.5vw);color:#93C5FD;font-style:italic;letter-spacing:.06em;text-shadow:1px 1px 0 #000,-1px -1px 0 #000,0 0 8px rgba(147,197,253,.4);white-space:nowrap;overflow:hidden;text-align:right;margin-bottom:3px;">${G.p2.name.toUpperCase()}</div>
+        <div style="position:relative;height:min(13px,3.5vw);background:#111;border:1px solid #444;border-radius:2px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.8);">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,#1a0000,#000);"></div>
+          <!-- HP fill — grows RIGHT to LEFT for P2 -->
+          <div id="hpbar2" style="position:absolute;right:0;top:0;bottom:0;width:${hp2pct.toFixed(1)}%;background:${barGrad2};transition:width .5s cubic-bezier(.4,0,.2,1),background .4s ease;box-shadow:0 0 8px rgba(34,197,94,.5);">
+            <div style="position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.3),transparent);border-radius:2px 2px 0 0;"></div>
+          </div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-start;padding-left:4px;">
+            <span style="font-family:'Press Start 2P',monospace;font-size:min(.45rem,1.5vw);color:rgba(255,255,255,.9);text-shadow:1px 1px 2px #000;">${pk2.currentHp}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:2px;flex-direction:row-reverse;">
+          <span style="font-family:'Press Start 2P',monospace;font-size:min(.38rem,1.2vw);color:rgba(255,255,255,.5);letter-spacing:.02em;">${pk2.shiny?"✨":""}${pk2.name.slice(0,9).toUpperCase()}</span>
+          ${statusBadge(pk2.status)}
+          <div style="display:flex;gap:2px;margin-right:auto;">
+            ${b.t2.map((pk,i)=>`<div style="width:8px;height:8px;border-radius:50%;background:${pk.currentHp>0?"#22C55E":"#333"};outline:${i===b.a2?"1.5px solid #93C5FD":"1px solid #444"};outline-offset:1px;"></div>`).join("")}
+          </div>
+        </div>
+      </div>
+
+      <!-- P2 portrait -->
+      <div style="width:min(44px,11vw);height:min(44px,11vw);flex-shrink:0;border:2px solid #8B4513;border-radius:3px;overflow:hidden;background:#000;position:relative;">
+        <img src="${su(pk2.id)}" style="width:130%;height:130%;object-fit:cover;object-position:center top;transform:translateX(-10%);filter:contrast(1.1) saturate(1.2);">
+        <div style="position:absolute;inset:0;box-shadow:inset 0 0 8px rgba(0,0,0,.8);"></div>
+      </div>
+    </div>
+    <!-- Bottom metallic trim -->
+    <div style="height:2px;background:linear-gradient(90deg,#2a1500,#6B3A1F,#8B4513,#6B3A1F,#2a1500);"></div>
   </div>`;
 
-  // ── ARENA (Canvas-powered) ───────────────────────────────
+  // ── ARENA ─────────────────────────────────────────────────
   const scLabel=_scLabels[sc.name]||sc.name;
-  // Init canvas scene after DOM renders
-  if(typeof initCanvasScene==='function'){
-    setTimeout(()=>initCanvasScene(sc.name),30);
-  }
-  const arena=`<div id="arena" style="position:relative;overflow:hidden;flex:1;min-height:0;">
-    <canvas id="scene-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;min-height:0;"></canvas>
+  const arena=`<div id="arena" style="position:relative;overflow:hidden;flex:1;">
+    ${sceneSVG(sc,100,100)}
     <!-- ground shadow overlay for depth -->
     <div style="position:absolute;bottom:0;left:0;right:0;height:${sc.groundH+5}%;background:linear-gradient(0deg,rgba(0,0,0,.35) 0%,transparent 100%);pointer-events:none;z-index:1;"></div>
     <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:rgba(255,255,255,.7);font-family:'Roboto',sans-serif;font-size:.62rem;font-weight:700;padding:3px 12px;border-radius:4px;z-index:5;letter-spacing:.08em;text-transform:uppercase;">${scLabel}</div>
@@ -535,16 +582,18 @@ battle(){
       }).filter(Boolean).join("");
 
       // Header showing who's attacking vs who's defending
-      const atkHeader=`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px 3px;background:rgba(5,10,25,.8);border-bottom:1px solid rgba(59,130,246,.15);">
-        <div style="display:flex;align-items:center;gap:5px;">
-          <img src="${su(apk.id)}" width="24" height="24" style="object-fit:contain;filter:drop-shadow(0 0 5px ${(TC[apk.types[0]]||TC.normal).bg});">
-          <span style="font-family:'Rajdhani',sans-serif;font-size:min(.9rem,3.5vw);font-weight:700;color:#fff;">${apk.name.toUpperCase()}</span>
-          <span style="font-size:.6rem;color:rgba(255,255,255,.3);font-family:'Roboto',sans-serif;">— elige ataque</span>
+      const atkHeader=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px 4px;background:rgba(5,10,25,.6);">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <img src="${su(apk.id)}" width="28" height="28" style="object-fit:contain;filter:drop-shadow(0 0 6px ${(TC[apk.types[0]]||TC.normal).bg});">
+          <div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:.8rem;font-weight:700;color:#fff;">${apk.name.toUpperCase()}</div>
+            <div style="font-size:.6rem;color:rgba(255,255,255,.4);font-family:'Roboto',sans-serif;">Elige un movimiento</div>
+          </div>
         </div>
-        <div style="display:flex;align-items:center;gap:4px;opacity:.55;">
-          <span style="font-size:.55rem;color:rgba(255,255,255,.4);">VS</span>
-          <img src="${su(defPk.id)}" width="20" height="20" style="object-fit:contain;filter:grayscale(.4);">
-          <span style="font-family:'Roboto',sans-serif;font-size:min(.6rem,2.5vw);color:rgba(255,255,255,.4);">${defPk.name}</span>
+        <div style="display:flex;align-items:center;gap:5px;opacity:.6;">
+          <span style="font-size:.6rem;color:rgba(255,255,255,.5);font-family:'Roboto',sans-serif;">vs</span>
+          <img src="${su(defPk.id)}" width="22" height="22" style="object-fit:contain;filter:grayscale(.5);">
+          <span style="font-family:'Roboto',sans-serif;font-size:.65rem;color:rgba(255,255,255,.45);">${defPk.name}</span>
         </div>
       </div>`;
 
@@ -573,7 +622,7 @@ battle(){
     ac=`<div style="padding:14px;background:#0a0a0a;border-top:2px solid #222;text-align:center;flex-shrink:0;"><span style="font-family:'Roboto',sans-serif;color:rgba(96,165,250,.4);font-size:.9rem;font-weight:700;letter-spacing:.1em;">COMBATIENDO...</span></div>`;
   }
 
-  const blogPanel=`<div id="blog" style="background:rgba(5,10,25,.92);border-top:1px solid rgba(59,130,246,.15);padding:4px 8px;display:flex;flex-direction:column;gap:2px;min-height:28px;max-height:70px;overflow:hidden;flex-shrink:0;"></div>`;
+  const blogPanel=`<div id="blog" style="background:rgba(5,10,25,.92);border-top:1px solid rgba(59,130,246,.15);padding:6px 10px;display:flex;flex-direction:column;gap:3px;min-height:32px;max-height:90px;overflow:hidden;flex-shrink:0;"></div>`;
   const tb=G.mode==="pvp"&&!b.locked?`<div style="text-align:center;padding:4px;background:#0a0a0a;"><span style="background:#F59E0B;color:#000;font-family:'Roboto',sans-serif;font-size:.85rem;font-weight:700;padding:3px 16px;border-radius:3px;letter-spacing:.06em;">TURNO: ${G[b.ct==="p1"?"p1":"p2"].name.toUpperCase()}</span></div>`:"";
 
   // Show enter quotes ONCE per battle (not on every render)
