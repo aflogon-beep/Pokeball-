@@ -388,15 +388,15 @@ function placeSpriteNow(img, wrapId, shadowId, isP1, groundH){
   if(!W||!H)return;
 
   const horizonY=Math.round(H*(100-groundH)/100);
-  const fighterGroundY=Math.round(H*0.90);
+  const fighterGroundY=Math.round(H*0.92);
 
-  // Portrait mobile: smaller sprites, more padding to avoid overlap
+  // Portrait mobile: bigger sprites, tight padding
   const isPortrait = W < H;
-  const maxPct   = isPortrait ? 0.20 : 0.28;   // sprite width % of arena
-  const minPx    = isPortrait ? 100  : 190;
-  const maxPx    = isPortrait ? 200  : 380;
-  const maxHpct  = isPortrait ? 0.38 : 0.46;   // max height % of arena
-  const padPct   = isPortrait ? 0.03 : 0.08;   // side padding
+  const maxPct   = isPortrait ? 0.26 : 0.29;   // sprite width % of arena
+  const minPx    = isPortrait ? 120  : 190;
+  const maxPx    = isPortrait ? 240  : 360;
+  const maxHpct  = isPortrait ? 0.46 : 0.50;   // max height % of arena
+  const padPct   = isPortrait ? 0.01 : 0.05;   // very tight pad = max separation
 
   const targetW=Math.min(maxPx, Math.max(minPx, Math.round(W*maxPct)));
 
