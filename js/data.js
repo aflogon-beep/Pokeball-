@@ -1,6 +1,19 @@
 // PokéBattle Data
 
-const A=["🧑‍🚀","👦","👧","🧒","👨‍🦱","👩‍🦱","🧑‍🎤","🧙","🥷","👑","🦸","🦹","🧛","🧟","🐉","🦊","🐺","🦁","🐯","⚡","🔥","💀","🎭","🏴‍☠️","🤖"];
+const A=[
+  // 0-7: Entrenadores base
+  "👦","👧","🧒","🧑","👱","👨","👩","🧔",
+  // 8-15: Expertos y maestros
+  "🧙","🥷","🤠","🎩","👑","🦸","🦹","🧝",
+  // 16-23: Elementos / legendarios
+  "⚡","🔥","💧","🌿","🌟","❄️","🌙","☀️",
+  // 24-31: Animales
+  "🦊","🐉","🦁","🐯","🦅","🦋","🐺","🦄",
+  // 32-39: Actitud
+  "😎","🤖","👻","💀","🎭","🌈","💎","🏆",
+  // 40-47: Extra
+  "🧑‍🚀","🧑‍🎤","🧑‍🔬","🧑‍💻","🕵️","👮","🥊","🏴‍☠️"
+];
 const TC={fire:{bg:"#EF4444",grd:"#B91C1C",t:"#fff",l:"Fuego"},water:{bg:"#3B82F6",grd:"#1D4ED8",t:"#fff",l:"Agua"},grass:{bg:"#22C55E",grd:"#15803D",t:"#fff",l:"Planta"},electric:{bg:"#EAB308",grd:"#A16207",t:"#fff",l:"Eléctrico"},ground:{bg:"#D97706",grd:"#92400E",t:"#fff",l:"Tierra"},flying:{bg:"#38BDF8",grd:"#0284C7",t:"#fff",l:"Volador"},poison:{bg:"#A855F7",grd:"#7E22CE",t:"#fff",l:"Veneno"},psychic:{bg:"#EC4899",grd:"#BE185D",t:"#fff",l:"Psíquico"},normal:{bg:"#6B7280",grd:"#374151",t:"#fff",l:"Normal"},rock:{bg:"#92400E",grd:"#78350F",t:"#fff",l:"Roca"},ice:{bg:"#06B6D4",grd:"#0E7490",t:"#fff",l:"Hielo"},dragon:{bg:"#7C3AED",grd:"#5B21B6",t:"#fff",l:"Dragón"},bug:{bg:"#65A30D",grd:"#3F6212",t:"#fff",l:"Bicho"},ghost:{bg:"#4F46E5",grd:"#3730A3",t:"#fff",l:"Fantasma"},fighting:{bg:"#DC2626",grd:"#991B1B",t:"#fff",l:"Lucha"}};
 // Status effects: poison, paralysis, sleep, burn
 const STATUS={
