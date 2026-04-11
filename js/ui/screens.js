@@ -75,9 +75,19 @@ title(){
   let stars="";for(let i=0;i<28;i++){const x=Math.random()*100,y=Math.random()*100,s=1+Math.random()*3,d=2+Math.random()*4,dl=Math.random()*3;stars+=`<div style="position:absolute;left:${x}%;top:${y}%;width:${s}px;height:${s}px;background:#fff;border-radius:50%;animation:twinkle ${d}s ease-in-out ${dl}s infinite;"></div>`;}
   return`<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#0F172A,#1E3A5F,#1E40AF);overflow:hidden;">${stars}
     <div style="display:flex;flex-direction:column;align-items:center;z-index:1;padding:0 28px;width:100%;max-width:400px;">
-      <div style="animation:spin 12s linear infinite;margin-bottom:14px;">${POKEBALL}</div>
-      <h1 style="font-family:'Rajdhani',Impact,sans-serif;font-weight:700;font-size:clamp(2.2rem,8vw,4rem);background:linear-gradient(90deg,#FCD34D,#F97316,#EC4899,#60A5FA,#34D399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0 0 4px;line-height:1;text-align:center;letter-spacing:.08em;">⚡ POKÉBATTLE ⚡</h1>
-      <p style="font-family:'Rajdhani',sans-serif;color:#93C5FD;font-weight:600;letter-spacing:.3em;font-size:1rem;margin-bottom:32px;">GENERACIÓN 1</p>
+      <div style="position:relative;margin-bottom:16px;">
+        <div style="position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(204,0,0,.22),transparent 70%);animation:pulseGlow 2s ease-in-out infinite;pointer-events:none;"></div>
+        <div style="animation:spin 12s linear infinite;filter:drop-shadow(0 0 18px rgba(204,0,0,.7));">${POKEBALL}</div>
+      </div>
+      <div style="text-align:center;margin-bottom:5px;">
+        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(2.6rem,10vw,4.2rem);line-height:.95;letter-spacing:.05em;background:linear-gradient(180deg,#FFDE00 0%,#FFC107 45%,#FF9800 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(2px 3px 0 rgba(0,0,0,.9)) drop-shadow(-1px -1px 0 rgba(0,0,0,.9));">POKÉBATTLE</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:clamp(.85rem,3.5vw,1.1rem);color:#fff;letter-spacing:.5em;font-weight:700;text-shadow:1px 1px 0 #000;margin-top:2px;margin-left:.5em;">GENERACIÓN I</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;width:min(220px,70vw);">
+        <div style="flex:1;height:2px;background:linear-gradient(90deg,transparent,#FFDE00);border-radius:2px;"></div>
+        <span style="font-size:.8rem;">⚡</span>
+        <div style="flex:1;height:2px;background:linear-gradient(90deg,#FFDE00,transparent);border-radius:2px;"></div>
+      </div>
       <div style="display:flex;flex-direction:column;gap:14px;width:100%;">
         <button class="btn" style="background:linear-gradient(135deg,#3B82F6,#1D4ED8);font-size:1.15rem;padding:18px;box-shadow:0 4px 20px rgba(59,130,246,.5);" onclick="sfxMenu();go('mode')">🎮 Nueva Partida</button>
         <button class="btn" style="background:${hs?"linear-gradient(135deg,#8B5CF6,#6D28D9)":"#1E293B"};" onclick="sfxMenu();oSaves('load')" ${hs?"":"disabled"}>💾 Cargar Partida</button>
@@ -199,7 +209,12 @@ create(){
         <!-- Avatar grid -->
         <div style="margin-bottom:20px;">
           <div style="font-family:'Roboto',sans-serif;font-weight:700;font-size:.75rem;color:${accentCol};letter-spacing:.1em;margin-bottom:10px;">ELIGE TU AVATAR</div>
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-height:min(220px,35vh);overflow-y:auto;padding-right:2px;">${avs}</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;">
+            ${[["👦 TRAINER",0],["🧙 EXPERTO",8],["⚡ ELEMENTO",16],["🦊 ANIMAL",24],["😎 ESTILO",32],["🚀 EXTRA",40]].map(([lbl,st])=>`<button onclick="G._avCat=${st};render()" style="border:none;cursor:pointer;white-space:nowrap;font-family:'Roboto',sans-serif;font-size:.58rem;font-weight:700;padding:4px 8px;border-radius:20px;background:${(G._avCat||0)===st?accentCol:'rgba(255,255,255,.1)'};color:${(G._avCat||0)===st?'#fff':'rgba(255,255,255,.45)'};">${lbl}</button>`).join("")}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+            ${A.slice(G._avCat||0,(G._avCat||0)+8).map((av,i)=>{const idx=(G._avCat||0)+i;return`<button onclick="sfxSel();G['av'+${isP2?2:1}]=${idx};render()" style="background:${selAv===idx?'rgba(59,130,246,.25)':'rgba(255,255,255,.06)'};border:2px solid ${selAv===idx?accentCol:'rgba(255,255,255,.1)'};border-radius:12px;font-size:min(1.8rem,6.5vw);padding:8px 4px;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;${selAv===idx?'transform:scale(1.1)':''}">${av}</button>`;}).join("")}
+          </div>
         </div>
         <!-- CTA button -->
         <button onclick="sfxMenu();cNext()" style="width:100%;border:none;cursor:pointer;background:${accentGrad};color:#fff;font-family:'Roboto',sans-serif;font-weight:700;font-size:min(1rem,4vw);letter-spacing:.06em;padding:16px;border-radius:8px;box-shadow:0 4px 24px ${accentGlow};transition:transform .1s,filter .1s;" onpointerdown="this.style.transform='scale(.95)'" onpointerup="this.style.transform='scale(1)'">
@@ -430,7 +445,7 @@ battle(){
   if(typeof initCanvasScene==='function'){
     setTimeout(()=>initCanvasScene(sc.name),30);
   }
-  const arena=`<div id="arena" style="position:relative;overflow:hidden;flex:1;min-height:0;">
+  const arena=`<div id="arena" style="position:relative;overflow:hidden;flex-shrink:0;height:44vh;min-height:180px;max-height:320px;">
     <canvas id="scene-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;min-height:0;"></canvas>
     <!-- ground shadow overlay for depth -->
     <div style="position:absolute;bottom:0;left:0;right:0;height:${sc.groundH+5}%;background:linear-gradient(0deg,rgba(0,0,0,.35) 0%,transparent 100%);pointer-events:none;z-index:1;"></div>
@@ -458,11 +473,13 @@ battle(){
   let ac="";
   if(!b.locked){
     if(b.ph==="action"){
-      const turnBanner=G.mode==="cpu"&&!b.locked?`<div style="text-align:center;padding:4px 0;background:linear-gradient(90deg,transparent,rgba(59,130,246,.15),transparent);animation:pulseGlow 1.5s ease-in-out infinite;border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;"><span style="font-family:'Roboto',sans-serif;font-size:.72rem;font-weight:700;color:#60A5FA;letter-spacing:.12em;">⚔ TU TURNO — ${G.p1.name.toUpperCase()}</span></div>`:"";
-      ac=(turnBanner||"")+`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0;background:rgba(10,18,36,.98);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;">
-        <button class="btn" style="background:linear-gradient(180deg,#2563EB,#1D4ED8);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.04em;padding:14px 4px;" onclick="sfxMenu();bPh('attack')">⚔ ATACAR</button>
-        <button class="btn" style="background:linear-gradient(180deg,#1565C0,#0D47A1);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.04em;padding:14px 4px;" onclick="sfxMenu();bPh('switch')">↕ CAMBIAR</button>
-        <button class="btn" onclick="usePotion()" style="background:${b.potions1?'linear-gradient(180deg,#065f46,#047857)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.78rem;font-weight:700;padding:14px 4px;color:${b.potions1?'#4ade80':'rgba(255,255,255,.2)'};" title="Poción: +30HP">💊${b.potions1?'':'✗'}</button>
+      const turnBanner=G.mode==="cpu"&&!b.locked?`<span style="font-family:'Roboto',sans-serif;font-size:.7rem;font-weight:700;color:#60A5FA;letter-spacing:.1em;">⚔ TU TURNO — ${G.p1.name.toUpperCase()}</span>`:"";
+      // Restore battle log in blog-zone
+      setTimeout(()=>{const bz=document.getElementById("blog-zone");const bl=document.getElementById("blog");if(bz&&bl&&bz.firstChild!==bl){bz.innerHTML="";const bd=document.createElement("div");bd.id="blog";bd.style.cssText="padding:6px 10px;display:flex;flex-direction:column;gap:3px;height:100%;";bz.appendChild(bd);updateBattleLog();}if(turnBanner){const tb2=document.createElement("div");tb2.style.cssText="text-align:center;padding:3px 0;background:linear-gradient(90deg,transparent,rgba(59,130,246,.12),transparent);border-bottom:1px solid rgba(59,130,246,.15);";tb2.innerHTML=turnBanner;bz&&bz.prepend(tb2);}},0);
+      ac=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0;background:rgba(10,18,36,.98);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;">
+        <button class="btn" style="background:linear-gradient(180deg,#2563EB,#1D4ED8);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('attack')">⚔ ATACAR</button>
+        <button class="btn" style="background:linear-gradient(180deg,#1565C0,#0D47A1);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('switch')">↕ CAMBIAR</button>
+        <button class="btn" onclick="usePotion()" style="background:${b.potions1?'linear-gradient(180deg,#065f46,#047857)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.78rem;font-weight:700;padding:14px 4px;color:${b.potions1?'#4ade80':'rgba(255,255,255,.2)'};">💊${b.potions1?'':'✗'}</button>
         <button class="btn" onclick="dSave()" style="background:rgba(15,23,42,.9);border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">💾</button>
         <button id="exit-confirm" data-step="0" class="btn" onclick="exitBattle()" style="background:rgba(15,23,42,.9);border-radius:0;font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">🚪</button>
       </div>`;
@@ -548,12 +565,20 @@ battle(){
         </div>
       </div>`;
 
-      ac=`<div style="background:rgba(5,10,25,.96);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;max-height:55vh;overflow-y:auto;">
-        ${atkHeader}
-        <div style="padding:6px 8px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">${ms}</div>
-          <button class="btn" onclick="sfxMenu();bPh('action')" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);font-family:'Roboto',sans-serif;font-size:.85rem;font-weight:700;padding:9px;border-radius:7px;color:#60A5FA;">← ATRÁS</button>
-        </div>
+      // Inject moves into blog-zone, keep bottom bar
+      setTimeout(()=>{
+        const bz=document.getElementById('blog-zone');
+        if(bz)bz.innerHTML=`<div style="padding:5px 6px;overflow-y:auto;height:100%;">
+          ${atkHeader}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px;">${ms}</div>
+        </div>`;
+      },0);
+      ac=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0;background:rgba(10,18,36,.98);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;">
+        <button class="btn" style="background:${b.ph==='action'?'linear-gradient(180deg,#2563EB,#1D4ED8)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('attack')">⚔ ATACAR</button>
+        <button class="btn" style="background:${b.ph==='action'?'linear-gradient(180deg,#1565C0,#0D47A1)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('switch')">↕ CAMBIAR</button>
+        <button class="btn" onclick="usePotion()" style="background:${b.potions1?'linear-gradient(180deg,#065f46,#047857)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.78rem;font-weight:700;padding:14px 4px;color:${b.potions1?'#4ade80':'rgba(255,255,255,.2)'};">💊${b.potions1?'':'✗'}</button>
+        <button class="btn" onclick="dSave()" style="background:rgba(15,23,42,.9);border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">💾</button>
+        <button id="exit-confirm" data-step="0" class="btn" onclick="exitBattle()" style="background:rgba(15,23,42,.9);border-radius:0;font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">🚪</button>
       </div>`;
     } else if(b.ph==="switch"){
       const pks=at.map((pk,i)=>{
@@ -564,16 +589,20 @@ battle(){
           <div style="font-size:.6rem;color:${d?"#333":"#666"};">${pk.currentHp}/${pk.hp}</div>
         </button>`;
       }).join("");
-      ac=`<div style="background:#0a0a0a;border-top:2px solid #222;flex-shrink:0;padding:8px 10px;">
-        <div style="display:flex;gap:6px;margin-bottom:6px;">${pks}</div>
-        <button class="btn" onclick="sfxMenu();bPh('action')" style="background:rgba(15,23,42,.9);border:1px solid rgba(59,130,246,.2);font-size:.85rem;padding:10px;border-radius:6px;color:#60A5FA;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);">← ATRÁS</button>
+      setTimeout(()=>{const bz=document.getElementById("blog-zone");if(bz)bz.innerHTML=`<div style="padding:6px 8px;height:100%;overflow-y:auto;"><div style="font-family:'Roboto',sans-serif;font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:5px;letter-spacing:.06em;">ELIGE POKÉMON</div><div style="display:flex;gap:5px;">${pks}</div></div>`;},0);
+      ac=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0;background:rgba(10,18,36,.98);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;">
+        <button class="btn" style="background:linear-gradient(180deg,#2563EB,#1D4ED8);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('attack')">⚔ ATACAR</button>
+        <button class="btn" style="background:linear-gradient(180deg,#1565C0,#0D47A1);border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('switch')">↕ CAMBIAR</button>
+        <button class="btn" onclick="usePotion()" style="background:\${b.potions1?'linear-gradient(180deg,#065f46,#047857)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.78rem;font-weight:700;padding:14px 4px;color:\${b.potions1?'#4ade80':'rgba(255,255,255,.2)'};">💊\${b.potions1?'':'✗'}</button>
+        <button class="btn" onclick="dSave()" style="background:rgba(15,23,42,.9);border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">💾</button>
+        <button id="exit-confirm" data-step="0" class="btn" onclick="exitBattle()" style="background:rgba(15,23,42,.9);border-radius:0;font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">🚪</button>
       </div>`;
     }
   } else {
     ac=`<div style="padding:14px;background:#0a0a0a;border-top:2px solid #222;text-align:center;flex-shrink:0;"><span style="font-family:'Roboto',sans-serif;color:rgba(96,165,250,.4);font-size:.9rem;font-weight:700;letter-spacing:.1em;">COMBATIENDO...</span></div>`;
   }
 
-  const blogPanel=`<div id="blog" style="background:rgba(5,10,25,.92);border-top:1px solid rgba(59,130,246,.15);padding:4px 8px;display:flex;flex-direction:column;gap:2px;min-height:28px;max-height:70px;overflow:hidden;flex-shrink:0;"></div>`;
+  const blogPanel=`<div id="blog-zone" style="flex:1;min-height:80px;max-height:140px;background:rgba(5,10,25,.95);border-top:1px solid rgba(59,130,246,.15);overflow:hidden;flex-shrink:0;"><div id="blog" style="padding:6px 10px;display:flex;flex-direction:column;gap:3px;height:100%;"></div></div>`;
   const tb=G.mode==="pvp"&&!b.locked?`<div style="text-align:center;padding:4px;background:#0a0a0a;"><span style="background:#F59E0B;color:#000;font-family:'Roboto',sans-serif;font-size:.85rem;font-weight:700;padding:3px 16px;border-radius:3px;letter-spacing:.06em;">TURNO: ${G[b.ct==="p1"?"p1":"p2"].name.toUpperCase()}</span></div>`:"";
 
   // Show enter quotes ONCE per battle (not on every render)
@@ -590,7 +619,7 @@ battle(){
       }
     }
   },100);
-  return`<div style="background:#000;display:flex;flex-direction:column;position:absolute;inset:0;overflow:hidden;">${sfTop}${arena}${blogPanel}${tb}${ac}</div>`;
+  return`<div style="background:#000;display:flex;flex-direction:column;position:absolute;inset:0;overflow:hidden;">${sfTop}${arena}${blogPanel}${ac}</div>`;
 },
 
 victory(){
