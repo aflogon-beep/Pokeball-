@@ -562,20 +562,12 @@ battle(){
         </div>
       </div>`;
 
-      // Inject moves into blog-zone, keep bottom bar
-      setTimeout(()=>{
-        const bz=document.getElementById('blog-zone');
-        if(bz)bz.innerHTML=`<div style="padding:5px 6px;overflow-y:auto;height:100%;">
-          ${atkHeader}
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px;">${ms}</div>
-        </div>`;
-      },0);
-      ac=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0;background:rgba(10,18,36,.98);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;">
-        <button class="btn" style="background:${b.ph==='action'?'linear-gradient(180deg,#2563EB,#1D4ED8)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('attack')">⚔ ATACAR</button>
-        <button class="btn" style="background:${b.ph==='action'?'linear-gradient(180deg,#1565C0,#0D47A1)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.2);font-family:'Roboto',sans-serif;font-size:.88rem;font-weight:700;padding:14px 4px;" onclick="sfxMenu();bPh('switch')">↕ CAMBIAR</button>
-        <button class="btn" onclick="usePotion()" style="background:${b.potions1?'linear-gradient(180deg,#065f46,#047857)':'rgba(15,23,42,.9)'};border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.78rem;font-weight:700;padding:14px 4px;color:${b.potions1?'#4ade80':'rgba(255,255,255,.2)'};">💊${b.potions1?'':'✗'}</button>
-        <button class="btn" onclick="dSave()" style="background:rgba(15,23,42,.9);border-radius:0;border-right:1px solid rgba(59,130,246,.15);font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">💾</button>
-        <button id="exit-confirm" data-step="0" class="btn" onclick="exitBattle()" style="background:rgba(15,23,42,.9);border-radius:0;font-size:.75rem;padding:14px 4px;color:rgba(255,255,255,.35);">🚪</button>
+      ac=`<div style="background:rgba(5,10,25,.96);border-top:1px solid rgba(59,130,246,.2);flex-shrink:0;">
+        ${atkHeader}
+        <div style="padding:6px 8px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">${ms}</div>
+          <button class="btn" onclick="sfxMenu();bPh('action')" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);font-family:'Roboto',sans-serif;font-size:.85rem;font-weight:700;padding:9px;border-radius:7px;color:#60A5FA;">← ATRÁS</button>
+        </div>
       </div>`;
     } else if(b.ph==="switch"){
       const pks=at.map((pk,i)=>{
