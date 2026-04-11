@@ -1,9 +1,5 @@
 // PokéBattle Main — G state, router, helpers, boot
 
-// Pokéball SVGs (used by showSplash + animPokeball)
-const POKEBALL_MINI=`<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="100" cy="100" r="95" fill="white" stroke="#1E293B" stroke-width="6"/><path d="M 10 100 A 90 90 0 0 1 190 100 Z" fill="#EF4444"/><line x1="10" y1="100" x2="190" y2="100" stroke="#1E293B" stroke-width="6"/><circle cx="100" cy="100" r="22" fill="white" stroke="#1E293B" stroke-width="6"/><circle cx="100" cy="100" r="10" fill="#E2E8F0"/></svg>`;
-const POKEBALL=`<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="110" height="110"><circle cx="100" cy="100" r="95" fill="white" stroke="#1E293B" stroke-width="6"/><path d="M 10 100 A 90 90 0 0 1 190 100 Z" fill="#EF4444"/><line x1="10" y1="100" x2="190" y2="100" stroke="#1E293B" stroke-width="6"/><circle cx="100" cy="100" r="22" fill="white" stroke="#1E293B" stroke-width="6"/><circle cx="100" cy="100" r="10" fill="#E2E8F0"/></svg>`;
-
 let G={scr:"title",mode:"cpu",diff:"normal",tutorial:!localStorage.getItem("pb_played"),cstep:1,av1:0,av2:3,p1:null,p2:null,sel:[],sfor:1,pvpk:null,bat:null,vd:null,smode:"load",pact:null,pp:null,pcb:null,fsfor:null,scenario:null,modal:null,fType:"all",fSearch:""};
 
 function te(atk,dt){let m=1;for(const d of dt){const c=CH[atk]||{};if(c[d]!==undefined)m*=c[d];}return m;}
@@ -74,6 +70,8 @@ function showSplash(){
 }
 function render(){document.getElementById("app").innerHTML=SCREENS[G.scr]?SCREENS[G.scr]():`<div style="color:#fff;padding:20px;">Error: ${G.scr}</div>`;}
 
+const POKEBALL_MINI=`<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="100" cy="100" r="95" fill="white" stroke="#1E293B" stroke-width="6"/><path d="M 10 100 A 90 90 0 0 1 190 100 Z" fill="#EF4444"/><line x1="10" y1="100" x2="190" y2="100" stroke="#1E293B" stroke-width="6"/><circle cx="100" cy="100" r="22" fill="white" stroke="#1E293B" stroke-width="6"/><circle cx="100" cy="100" r="10" fill="#E2E8F0"/></svg>`;
+const POKEBALL=`<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="110" height="110"><circle cx="100" cy="100" r="95" fill="white" stroke="#1E293B" stroke-width="6"/><path d="M 10 100 A 90 90 0 0 1 190 100 Z" fill="#EF4444"/><line x1="10" y1="100" x2="190" y2="100" stroke="#1E293B" stroke-width="6"/><circle cx="100" cy="100" r="22" fill="white" stroke="#1E293B" stroke-width="6"/><circle cx="100" cy="100" r="10" fill="#E2E8F0"/></svg>`;
 
 // Boot
 showSplash();
