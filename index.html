@@ -21,27 +21,49 @@
 <body>
 <div id="app"></div>
 
+<!-- Diagnostics — visible error display for mobile -->
+<script>
+window._diag = {errors:[], loaded:[]};
+window.onerror = function(msg, src, line, col) {
+  window._diag.errors.push((src||'').split('/').pop() + ':' + line + ' — ' + msg);
+  showDiag();
+  return false;
+};
+function showDiag() {
+  const app = document.getElementById('app');
+  if(!app) return;
+  if(window._diag.errors.length === 0) return;
+  app.style.cssText = 'position:fixed;inset:0;background:#050505;color:#fff;padding:16px;font-family:monospace;font-size:12px;overflow-y:auto;z-index:9999;';
+  app.innerHTML =
+    '<div style="color:#f87171;font-size:15px;margin-bottom:10px;font-weight:bold;">⚠ Error JavaScript</div>' +
+    window._diag.errors.map(e =>
+      '<div style="background:#1c0000;border-left:3px solid #ef4444;padding:8px 10px;margin-bottom:6px;border-radius:0 4px 4px 0;word-break:break-all;">' + e + '</div>'
+    ).join('') +
+    '<div style="color:#555;margin-top:12px;font-size:10px;">Loaded: ' + window._diag.loaded.join(', ') + '</div>';
+}
+</script>
+
 <!-- 1. Audio (SFX, music, Web Audio API) -->
-<script src="js/audio.js"></script>
+<script src="js/audio.js" onload="window._diag.loaded.push('audio')" onerror="window._diag.errors.push('FAILED: audio.js');showDiag()"></script>
 
 <!-- 2. Game data (Pokémon, moves, types, Pokédex) -->
-<script src="js/data.js"></script>
+<script src="js/data.js" onload="window._diag.loaded.push('data')" onerror="window._diag.errors.push('FAILED: data.js');showDiag()"></script>
 
-<!-- 3. Scenarios (SVG data + Canvas animated scenes) -->
-<script src="js/scenarios/scenes.js"></script>
-<script src="js/scenarios/canvas-scenes.js"></script>
+<!-- 3. Scenarios -->
+<script src="js/scenarios/scenes.js" onload="window._diag.loaded.push('scenes')" onerror="window._diag.errors.push('FAILED: scenes.js');showDiag()"></script>
+<script src="js/scenarios/canvas-scenes.js" onload="window._diag.loaded.push('canvas')" onerror="window._diag.errors.push('FAILED: canvas-scenes.js');showDiag()"></script>
 
-<!-- 4. UI Screens (all game screens) -->
-<script src="js/ui/screens.js"></script>
+<!-- 4. UI Screens -->
+<script src="js/ui/screens.js" onload="window._diag.loaded.push('screens')" onerror="window._diag.errors.push('FAILED: screens.js');showDiag()"></script>
 
-<!-- 5. Battle engine (combat logic, CPU AI) -->
-<script src="js/battle.js"></script>
+<!-- 5. Battle engine -->
+<script src="js/battle.js" onload="window._diag.loaded.push('battle')" onerror="window._diag.errors.push('FAILED: battle.js');showDiag()"></script>
 
 <!-- 6. Sprites & animations -->
-<script src="js/sprites.js"></script>
+<script src="js/sprites.js" onload="window._diag.loaded.push('sprites')" onerror="window._diag.errors.push('FAILED: sprites.js');showDiag()"></script>
 
-<!-- 7. Main (state, router, render — boots last) -->
-<script src="js/main.js"></script>
+<!-- 7. Main (boots last) -->
+<script src="js/main.js" onload="window._diag.loaded.push('main')" onerror="window._diag.errors.push('FAILED: main.js');showDiag()"></script>
 
 <!-- PWA Service Worker -->
 <script>
