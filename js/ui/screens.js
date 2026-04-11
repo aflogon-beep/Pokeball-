@@ -213,7 +213,7 @@ create(){
             ${[["👦 TRAINER",0],["🧙 EXPERTO",8],["⚡ ELEMENTO",16],["🦊 ANIMAL",24],["😎 ESTILO",32],["🚀 EXTRA",40]].map(([lbl,st])=>`<button onclick="G._avCat=${st};render()" style="border:none;cursor:pointer;white-space:nowrap;font-family:'Roboto',sans-serif;font-size:.58rem;font-weight:700;padding:4px 8px;border-radius:20px;background:${(G._avCat||0)===st?accentCol:'rgba(255,255,255,.1)'};color:${(G._avCat||0)===st?'#fff':'rgba(255,255,255,.45)'};">${lbl}</button>`).join("")}
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
-            ${A.slice(G._avCat||0,(G._avCat||0)+8).map((av,i)=>{const idx=(G._avCat||0)+i;return`<button onclick="sfxSel();G['av'+${isP2?2:1}]=${idx};render()" style="background:${selAv===idx?'rgba(59,130,246,.25)':'rgba(255,255,255,.06)'};border:2px solid ${selAv===idx?accentCol:'rgba(255,255,255,.1)'};border-radius:12px;font-size:min(1.8rem,6.5vw);padding:8px 4px;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;${selAv===idx?'transform:scale(1.1)':''}">${av}</button>`;}).join("")}
+            ${A.slice(G._avCat||0,(G._avCat||0)+8).map((em,i)=>{const idx=(G._avCat||0)+i;const sel=av===idx;return`<button onclick="sfxSel();G['av'+${isP2?2:1}]=${idx};render()" style="background:${sel?'rgba(59,130,246,.25)':'rgba(255,255,255,.06)'};border:2px solid ${sel?accentCol:'rgba(255,255,255,.1)'};border-radius:12px;font-size:min(1.8rem,6.5vw);padding:8px 4px;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;${sel?'transform:scale(1.1)':''}">\${em}</button>`;}).join("")}
           </div>
         </div>
         <!-- CTA button -->
