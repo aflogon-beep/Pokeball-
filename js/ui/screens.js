@@ -21,8 +21,9 @@ intro(){
       <div style="margin-top:2px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;">${pk.types.map(t=>bdg(t)).join("")}</div>
     </div>`).join("");
   startMusic();
+  if(typeof initCanvasScene==='function'){setTimeout(()=>initCanvasScene(sc?sc.name:'campo','intro-canvas'),30);}
   return`<div style="position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column;">
-    ${sceneSVG(sc,100,100)}
+    <canvas id="intro-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas>
     <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.2) 50%,rgba(0,0,0,.75) 100%);"></div>
     <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:min(16px,3%) min(12px,2%);">
       <!-- Title -->
@@ -475,10 +476,14 @@ battle(){
     <div style="height:2px;background:linear-gradient(90deg,#2a1500,#6B3A1F,#8B4513,#6B3A1F,#2a1500);"></div>
   </div>`;
 
-  // ── ARENA ─────────────────────────────────────────────────
+  // ── ARENA (Canvas-powered) ───────────────────────────────
   const scLabel=_scLabels[sc.name]||sc.name;
+  // Init canvas scene after DOM renders
+  if(typeof initCanvasScene==='function'){
+    setTimeout(()=>initCanvasScene(sc.name),30);
+  }
   const arena=`<div id="arena" style="position:relative;overflow:hidden;flex:1;">
-    ${sceneSVG(sc,100,100)}
+    <canvas id="scene-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas>
     <!-- ground shadow overlay for depth -->
     <div style="position:absolute;bottom:0;left:0;right:0;height:${sc.groundH+5}%;background:linear-gradient(0deg,rgba(0,0,0,.35) 0%,transparent 100%);pointer-events:none;z-index:1;"></div>
     <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:rgba(255,255,255,.7);font-family:'Roboto',sans-serif;font-size:.62rem;font-weight:700;padding:3px 12px;border-radius:4px;z-index:5;letter-spacing:.08em;text-transform:uppercase;">${scLabel}</div>
