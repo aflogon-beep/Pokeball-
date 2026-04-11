@@ -11,13 +11,13 @@ intro(){
   const team1imgs=t1.map(pk=>`
     <div style="text-align:center;flex:1;min-width:0;">
       <img src="${su(pk.id)}" style="${pkImg};object-fit:contain;display:block;margin:0 auto;">
-      <div style="color:#fff;font-weight:800;font-size:min(.7rem,3vmin);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pk.name}</div>
+      <div style="color:#fff;font-weight:800;font-size:min(.82rem,3.5vmin);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pk.name}</div>
       <div style="margin-top:2px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;">${pk.types.map(t=>bdg(t)).join("")}</div>
     </div>`).join("");
   const team2imgs=t2.map(pk=>`
     <div style="text-align:center;flex:1;min-width:0;">
       <img src="${su(pk.id)}" style="${pkImg};object-fit:contain;display:block;margin:0 auto;">
-      <div style="color:#fff;font-weight:800;font-size:min(.7rem,3vmin);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pk.name}</div>
+      <div style="color:#fff;font-weight:800;font-size:min(.82rem,3.5vmin);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pk.name}</div>
       <div style="margin-top:2px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;">${pk.types.map(t=>bdg(t)).join("")}</div>
     </div>`).join("");
   startMusic();
@@ -263,7 +263,7 @@ select(){
       const dexText=(DEX[String(pk.id)]||DEX[pk.id]||"Un Pokémon misterioso del que poco se sabe.");
       const typeIcon={fire:"🔥",water:"💧",grass:"🌿",electric:"⚡",psychic:"🔮",normal:"⭐",fighting:"👊",poison:"☠️",ground:"🌍",flying:"🌪️",rock:"🪨",ice:"❄️",bug:"🐛",ghost:"👻",dragon:"🐉"}[pk.types[0]]||"✨";
       const weakMap={fire:"💧",water:"⚡",grass:"🔥",electric:"🌍",psychic:"👻",normal:"👊",fighting:"🔮",poison:"🌍",ground:"💧",flying:"⚡",rock:"💧",ice:"🔥",bug:"🔥",ghost:"👻",dragon:"❄️"};
-      const sb=(val,col,lbl)=>`<div style="margin-bottom:4px;"><div style="display:flex;justify-content:space-between;margin-bottom:1px;"><span style="font-family:'Roboto',sans-serif;font-size:.58rem;font-weight:700;color:rgba(0,0,0,.45);letter-spacing:.05em;">${lbl}</span><span style="font-family:'Rajdhani',sans-serif;font-size:.82rem;font-weight:700;color:rgba(0,0,0,.6);">${val}</span></div><div style="height:4px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden;"><div style="width:${Math.min(100,val/160*100)}%;height:100%;background:${col};border-radius:2px;"></div></div></div>`;
+      const sb=(val,col,lbl)=>`<div style="margin-bottom:4px;"><div style="display:flex;justify-content:space-between;margin-bottom:1px;"><span style="font-family:'Roboto',sans-serif;font-size:.68rem;font-weight:700;color:rgba(0,0,0,.6);letter-spacing:.04em;">${lbl}</span><span style="font-family:'Rajdhani',sans-serif;font-size:.92rem;font-weight:700;color:rgba(0,0,0,.7);">${val}</span></div><div style="height:4px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden;"><div style="width:${Math.min(100,val/160*100)}%;height:100%;background:${col};border-radius:2px;"></div></div></div>`;
       modal=`<div onclick="G.modal=null;render()" style="position:absolute;inset:0;background:rgba(0,0,0,.85);z-index:50;display:flex;align-items:center;justify-content:center;padding:10px;">
         <div onclick="event.stopPropagation()" style="width:min(300px,90vw);max-height:90vh;overflow-y:auto;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.8),0 0 0 3px ${tc0.bg},0 0 0 6px rgba(255,215,0,.6);animation:vsSlam .3s ease both;">
           <!-- Header -->
@@ -271,7 +271,7 @@ select(){
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
               <div style="display:flex;align-items:center;gap:6px;">
                 <span style="background:rgba(255,255,255,.25);color:#fff;font-family:'Roboto',sans-serif;font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:3px;letter-spacing:.06em;">BÁSICO</span>
-                <span style="font-family:'Rajdhani',sans-serif;font-size:min(1.2rem,5vw);color:#fff;font-weight:700;">${pk.name.toUpperCase()}</span>
+                <span style="font-family:'Rajdhani',sans-serif;font-size:min(1.4rem,6vw);color:#fff;font-weight:700;">${pk.name.toUpperCase()}</span>
               </div>
               <div style="display:flex;align-items:center;gap:2px;">
                 <span style="font-family:'Roboto',sans-serif;font-size:.6rem;font-weight:700;color:rgba(255,255,255,.8);">PS</span>
@@ -291,7 +291,7 @@ select(){
           <div style="background:#f5ead0;padding:10px 12px;">
             <!-- Dex text -->
             <div style="background:rgba(255,255,255,.55);border-radius:7px;padding:7px 9px;margin-bottom:8px;border-left:3px solid ${tc0.bg};">
-              <div style="font-family:'Roboto',sans-serif;font-size:.7rem;color:rgba(0,0,0,.6);line-height:1.5;font-style:italic;">"${dexText}"</div>
+              <div style="font-family:'Roboto',sans-serif;font-size:.82rem;color:rgba(0,0,0,.75);line-height:1.55;font-style:italic;">"${dexText}"</div>
             </div>
             <!-- Stats -->
             <div style="background:rgba(255,255,255,.45);border-radius:7px;padding:8px 10px;margin-bottom:8px;">
@@ -302,7 +302,7 @@ select(){
             </div>
             <!-- Moves -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
-              ${(pk.moves||[]).filter(m=>m&&m.n&&m.p>0).slice(0,4).map(m=>`<div style="background:linear-gradient(135deg,${(TC[m.t]||TC.normal).bg},${(TC[m.t]||TC.normal).grd});border-radius:7px;padding:6px 7px;"><div style="font-family:'Roboto',sans-serif;font-weight:700;font-size:.68rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.n}</div><div style="font-size:.56rem;color:rgba(255,255,255,.7);margin-top:1px;">${bdg(m.t)} ${m.p}⚡ PP${m.pp}</div></div>`).join("")}
+              ${(pk.moves||[]).filter(m=>m&&m.n&&m.p>0).slice(0,4).map(m=>`<div style="background:linear-gradient(135deg,${(TC[m.t]||TC.normal).bg},${(TC[m.t]||TC.normal).grd});border-radius:7px;padding:6px 7px;"><div style="font-family:'Roboto',sans-serif;font-weight:700;font-size:.76rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.n}</div><div style="font-size:.56rem;color:rgba(255,255,255,.7);margin-top:1px;">${bdg(m.t)} ${m.p}⚡ PP${m.pp}</div></div>`).join("")}
             </div>
             <!-- Weakness row -->
             <div style="display:flex;gap:5px;margin-bottom:10px;">
@@ -342,7 +342,7 @@ select(){
     </div>
     <!-- Grid -->
     <div style="flex:1;overflow-y:auto;padding:8px 8px 2px;">
-      ${filtered.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;">${grid}</div>`:`<div style="text-align:center;padding:40px 20px;font-family:'Roboto',sans-serif;font-weight:700;font-size:1rem;color:rgba(96,165,250,.5);">SIN RESULTADOS</div>`}
+      ${filtered.length?`<div style="display:grid;grid-template-columns:repeat(${window.innerWidth<500?2:3},1fr);gap:8px;">${grid}</div>`:`<div style="text-align:center;padding:40px 20px;font-family:'Roboto',sans-serif;font-weight:700;font-size:1rem;color:rgba(96,165,250,.5);">SIN RESULTADOS</div>`}
     </div>
     <!-- Bottom bar -->
     <div style="display:grid;grid-template-columns:auto 1fr;gap:0;background:#0a0a0a;border-top:2px solid #222;flex-shrink:0;">
@@ -587,18 +587,16 @@ battle(){
       }).filter(Boolean).join("");
 
       // Header showing who's attacking vs who's defending
-      const atkHeader=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px 4px;background:rgba(5,10,25,.6);">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <img src="${su(apk.id)}" width="28" height="28" style="object-fit:contain;filter:drop-shadow(0 0 6px ${(TC[apk.types[0]]||TC.normal).bg});">
-          <div>
-            <div style="font-family:'Rajdhani',sans-serif;font-size:.8rem;font-weight:700;color:#fff;">${apk.name.toUpperCase()}</div>
-            <div style="font-size:.6rem;color:rgba(255,255,255,.4);font-family:'Roboto',sans-serif;">Elige un movimiento</div>
-          </div>
+      const atkHeader=`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px 3px;background:rgba(5,10,25,.8);border-bottom:1px solid rgba(59,130,246,.15);">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <img src="${su(apk.id)}" width="24" height="24" style="object-fit:contain;filter:drop-shadow(0 0 5px ${(TC[apk.types[0]]||TC.normal).bg});">
+          <span style="font-family:'Rajdhani',sans-serif;font-size:min(.9rem,3.5vw);font-weight:700;color:#fff;">${apk.name.toUpperCase()}</span>
+          <span style="font-size:.6rem;color:rgba(255,255,255,.3);font-family:'Roboto',sans-serif;">— elige ataque</span>
         </div>
-        <div style="display:flex;align-items:center;gap:5px;opacity:.6;">
-          <span style="font-size:.6rem;color:rgba(255,255,255,.5);font-family:'Roboto',sans-serif;">vs</span>
-          <img src="${su(defPk.id)}" width="22" height="22" style="object-fit:contain;filter:grayscale(.5);">
-          <span style="font-family:'Roboto',sans-serif;font-size:.65rem;color:rgba(255,255,255,.45);">${defPk.name}</span>
+        <div style="display:flex;align-items:center;gap:4px;opacity:.55;">
+          <span style="font-size:.55rem;color:rgba(255,255,255,.4);">VS</span>
+          <img src="${su(defPk.id)}" width="20" height="20" style="object-fit:contain;filter:grayscale(.4);">
+          <span style="font-family:'Roboto',sans-serif;font-size:min(.6rem,2.5vw);color:rgba(255,255,255,.4);">${defPk.name}</span>
         </div>
       </div>`;
 
@@ -627,7 +625,7 @@ battle(){
     ac=`<div style="padding:14px;background:#0a0a0a;border-top:2px solid #222;text-align:center;flex-shrink:0;"><span style="font-family:'Roboto',sans-serif;color:rgba(96,165,250,.4);font-size:.9rem;font-weight:700;letter-spacing:.1em;">COMBATIENDO...</span></div>`;
   }
 
-  const blogPanel=`<div id="blog" style="background:rgba(5,10,25,.92);border-top:1px solid rgba(59,130,246,.15);padding:6px 10px;display:flex;flex-direction:column;gap:3px;min-height:32px;max-height:90px;overflow:hidden;flex-shrink:0;"></div>`;
+  const blogPanel=`<div id="blog" style="background:rgba(5,10,25,.92);border-top:1px solid rgba(59,130,246,.15);padding:4px 8px;display:flex;flex-direction:column;gap:2px;min-height:28px;max-height:70px;overflow:hidden;flex-shrink:0;"></div>`;
   const tb=G.mode==="pvp"&&!b.locked?`<div style="text-align:center;padding:4px;background:#0a0a0a;"><span style="background:#F59E0B;color:#000;font-family:'Roboto',sans-serif;font-size:.85rem;font-weight:700;padding:3px 16px;border-radius:3px;letter-spacing:.06em;">TURNO: ${G[b.ct==="p1"?"p1":"p2"].name.toUpperCase()}</span></div>`:"";
 
   // Show enter quotes ONCE per battle (not on every render)
