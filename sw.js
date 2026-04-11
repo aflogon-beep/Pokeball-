@@ -1,7 +1,7 @@
 // PokéBattle Service Worker
 // Caches all assets for offline play
 
-const CACHE_NAME = 'pokebattle-v9.3.4';
+const CACHE_NAME = 'pokebattle-v9.3.6';
 const ASSETS = [
   './',
   './index.html',

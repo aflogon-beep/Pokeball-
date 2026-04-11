@@ -1,0 +1,7 @@
+# PokéBattle
+*.pyc
+__pycache__/
+.DS_Store
+node_modules/
+*.log
+pokebattle_v9.3.4_single.html
