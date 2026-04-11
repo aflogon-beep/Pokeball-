@@ -44,32 +44,32 @@ function showDiag() {
 </script>
 
 <!-- 1. Audio (SFX, music, Web Audio API) -->
-<script src="js/audio.js?v=920902" onload="window._diag.loaded.push('audio')" onerror="window._diag.errors.push('FAILED: audio.js');showDiag()"></script>
+<script src="js/audio.js?v=931638" onload="window._diag.loaded.push('audio')" onerror="window._diag.errors.push('FAILED: audio.js');showDiag()"></script>
 
 <!-- 2. Game data (Pokémon, moves, types, Pokédex) -->
-<script src="js/data.js?v=920902" onload="window._diag.loaded.push('data')" onerror="window._diag.errors.push('FAILED: data.js');showDiag()"></script>
+<script src="js/data.js?v=931638" onload="window._diag.loaded.push('data')" onerror="window._diag.errors.push('FAILED: data.js');showDiag()"></script>
 
 <!-- 3. Scenarios -->
-<script src="js/scenarios/scenes.js?v=920902" onload="window._diag.loaded.push('scenes')" onerror="window._diag.errors.push('FAILED: scenes.js');showDiag()"></script>
-<script src="js/scenarios/canvas-scenes.js?v=920902" onload="window._diag.loaded.push('canvas')" onerror="window._diag.errors.push('FAILED: canvas-scenes.js');showDiag()"></script>
+<script src="js/scenarios/scenes.js?v=931638" onload="window._diag.loaded.push('scenes')" onerror="window._diag.errors.push('FAILED: scenes.js');showDiag()"></script>
+<script src="js/scenarios/canvas-scenes.js?v=931638" onload="window._diag.loaded.push('canvas')" onerror="window._diag.errors.push('FAILED: canvas-scenes.js');showDiag()"></script>
 
 <!-- 4. UI Screens -->
-<script src="js/ui/screens.js?v=920902" onload="window._diag.loaded.push('screens')" onerror="window._diag.errors.push('FAILED: screens.js');showDiag()"></script>
+<script src="js/ui/screens.js?v=931638" onload="window._diag.loaded.push('screens')" onerror="window._diag.errors.push('FAILED: screens.js');showDiag()"></script>
 
 <!-- 5. Battle engine -->
-<script src="js/battle.js?v=920902" onload="window._diag.loaded.push('battle')" onerror="window._diag.errors.push('FAILED: battle.js');showDiag()"></script>
+<script src="js/battle.js?v=931638" onload="window._diag.loaded.push('battle')" onerror="window._diag.errors.push('FAILED: battle.js');showDiag()"></script>
 
 <!-- 6. Sprites & animations -->
-<script src="js/sprites.js?v=920902" onload="window._diag.loaded.push('sprites')" onerror="window._diag.errors.push('FAILED: sprites.js');showDiag()"></script>
+<script src="js/sprites.js?v=931638" onload="window._diag.loaded.push('sprites')" onerror="window._diag.errors.push('FAILED: sprites.js');showDiag()"></script>
 
 <!-- 7. Main (boots last) -->
-<script src="js/main.js?v=920902" onload="window._diag.loaded.push('main')" onerror="window._diag.errors.push('FAILED: main.js');showDiag()"></script>
+<script src="js/main.js?v=931638" onload="window._diag.loaded.push('main')" onerror="window._diag.errors.push('FAILED: main.js');showDiag()"></script>
 
 <!-- PWA Service Worker -->
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister())).then(()=>navigator.serviceWorker.register('sw.js?v=920902'))
+    navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister())).then(()=>navigator.serviceWorker.register('sw.js?v=931638'))
       .then(()=>console.log('[SW] registered'))
       .catch(e=>console.log('[SW] error:',e));
   });
