@@ -17,6 +17,13 @@ class ScenarioCanvas {
     if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
     this.resize();
+    // If still no size, retry after layout
+    if (!this.W || !this.H) {
+      setTimeout(() => {
+        if (this.canvas) { this.resize(); if (this.W && this.H) { this.setupParticles(); this.loop(); } }
+      }, 100);
+      return;
+    }
     window.addEventListener('resize', () => this.resize());
     this.setupParticles();
     this.loop();
@@ -855,61 +862,162 @@ class ScenaEstadio extends ScenarioCanvas {
 }
 
 // ── FÚTBOL (Football) ────────────────────────────────────
-class ScenaFutbol extends ScenaCampo {
-  // Extends campo but with football pitch instead of grass
+class ScenaFutbol extends ScenarioCanvas {
+  setupParticles() {
+    this.clouds = Array.from({ length: 4 }, (_, i) => ({
+      x: (i / 4) * (this.W || 400) + Math.random() * 60,
+      y: (0.08 + i * 0.04) * (this.H || 600),
+      w: 50 + Math.random() * 50,
+      speed: 0.18 + Math.random() * 0.15,
+      alpha: 0.85,
+    }));
+    // Fans in stands (colorful dots that wave)
+    this.fans = Array.from({ length: 80 }, () => ({
+      x: Math.random(),
+      row: Math.floor(Math.random() * 3),
+      phase: Math.random() * Math.PI * 2,
+      color: `hsl(${Math.floor(Math.random()*360)},80%,60%)`,
+    }));
+  }
+
   draw() {
     const { ctx, W, H, t } = this;
+    if (!W || !H) return;
     ctx.clearRect(0, 0, W, H);
 
-    // Sky (afternoon)
-    const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.65);
-    skyG.addColorStop(0, '#1a3a6e');
-    skyG.addColorStop(0.4, '#2e6db4');
-    skyG.addColorStop(1, '#87CEEB');
-    ctx.fillStyle = skyG;
-    ctx.fillRect(0, 0, W, H);
+    const groundY = H * 0.58; // where pitch starts
 
-    // Clouds
-    this.clouds.forEach(cl => {
-      cl.x += cl.speed * 0.7;
-      if (cl.x > W + cl.w) cl.x = -cl.w;
-      ctx.fillStyle = `rgba(255,255,255,${cl.alpha})`;
+    // ── Sky
+    const skyG = ctx.createLinearGradient(0, 0, 0, groundY);
+    skyG.addColorStop(0, '#0e2a5e');
+    skyG.addColorStop(0.5, '#1e5fa8');
+    skyG.addColorStop(1, '#4a8fd4');
+    ctx.fillStyle = skyG;
+    ctx.fillRect(0, 0, W, groundY);
+
+    // ── Stadium stands (behind pitch, top 40% of sky)
+    const standH = groundY * 0.45;
+    const standG = ctx.createLinearGradient(0, 0, 0, standH);
+    standG.addColorStop(0, '#1a1a2e');
+    standG.addColorStop(1, '#16213e');
+    ctx.fillStyle = standG;
+    ctx.fillRect(0, 0, W, standH);
+
+    // Stand rows
+    for (let row = 0; row < 3; row++) {
+      const ry = standH * (0.15 + row * 0.28);
+      const rh = standH * 0.18;
+      ctx.fillStyle = `rgba(20,25,50,0.6)`;
+      ctx.fillRect(0, ry, W, rh);
+      // Fan dots
+      this.fans.filter(f => f.row === row).forEach(f => {
+        const fx = f.x * W;
+        const wave = Math.sin(t * 2 + f.phase) * 2.5;
+        ctx.fillStyle = f.color;
+        ctx.beginPath();
+        ctx.arc(fx, ry + rh * 0.4 + wave, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // Floodlights
+    [[0.05, 0.42], [0.95, 0.42]].forEach(([px, py]) => {
+      const lx = px * W, ly = py * H;
+      // Post
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.ellipse(cl.x, cl.y, cl.w * 0.45, cl.w * 0.22, 0, 0, Math.PI * 2);
+      ctx.moveTo(lx, groundY);
+      ctx.lineTo(lx, ly);
+      ctx.stroke();
+      // Light glow
+      const lg = ctx.createRadialGradient(lx, ly, 0, lx, ly, 30);
+      lg.addColorStop(0, 'rgba(255,240,200,0.5)');
+      lg.addColorStop(1, 'transparent');
+      ctx.fillStyle = lg;
+      ctx.beginPath();
+      ctx.arc(lx, ly, 30, 0, Math.PI * 2);
       ctx.fill();
+      // Light beam toward pitch
+      const beamG = ctx.createLinearGradient(lx, ly, W * 0.5, groundY + H * 0.1);
+      beamG.addColorStop(0, 'rgba(255,240,180,0.08)');
+      beamG.addColorStop(1, 'transparent');
+      ctx.fillStyle = beamG;
       ctx.beginPath();
-      ctx.ellipse(cl.x - cl.w * 0.28, cl.y + 5, cl.w * 0.32, cl.w * 0.18, 0, 0, Math.PI * 2);
+      ctx.moveTo(lx, ly);
+      ctx.lineTo(lx + (W * 0.5 - lx) * 1.5, groundY + H * 0.15);
+      ctx.lineTo(lx - (W * 0.5 - lx) * 0.3, groundY + H * 0.15);
+      ctx.closePath();
       ctx.fill();
     });
 
-    const groundY = H * 0.62;
+    // Clouds
+    this.clouds.forEach(cl => {
+      cl.x += cl.speed;
+      if (cl.x > W + cl.w) cl.x = -cl.w;
+      ctx.fillStyle = `rgba(255,255,255,${cl.alpha * 0.7})`;
+      ctx.beginPath();
+      ctx.ellipse(cl.x, cl.y, cl.w * 0.5, cl.w * 0.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
 
-    // Football pitch stripes
-    for (let i = 0; i < 8; i++) {
-      const py = groundY + (i / 8) * (H - groundY);
-      const ph = (H - groundY) / 8;
-      ctx.fillStyle = i % 2 === 0 ? '#1a5c1a' : '#165016';
-      ctx.fillRect(0, py, W, ph);
+    // ── Pitch — alternating stripe pattern
+    const stripes = 10;
+    const stripeH = (H - groundY) / stripes;
+    for (let i = 0; i < stripes; i++) {
+      ctx.fillStyle = i % 2 === 0 ? '#1a6b1a' : '#157015';
+      ctx.fillRect(0, groundY + i * stripeH, W, stripeH + 1);
     }
 
-    // Pitch markings
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    // Pitch perspective overlay (darker far end)
+    const pitchFade = ctx.createLinearGradient(0, groundY, 0, groundY + H * 0.12);
+    pitchFade.addColorStop(0, 'rgba(0,0,0,0.3)');
+    pitchFade.addColorStop(1, 'transparent');
+    ctx.fillStyle = pitchFade;
+    ctx.fillRect(0, groundY, W, H * 0.12);
+
+    // ── Pitch markings with perspective
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
     ctx.lineWidth = 1.5;
-    // Center line
+
+    // Boundary lines
+    const margin = W * 0.04;
+    ctx.strokeRect(margin, groundY + H * 0.01, W - margin * 2, H - groundY - H * 0.02);
+
+    // Center line (vertical)
     ctx.beginPath();
-    ctx.moveTo(W * 0.5, groundY);
-    ctx.lineTo(W * 0.5, H);
+    ctx.moveTo(W * 0.5, groundY + H * 0.01);
+    ctx.lineTo(W * 0.5, H - H * 0.01);
     ctx.stroke();
-    // Center circle
+
+    // Center circle — ellipse for perspective
     ctx.beginPath();
-    ctx.ellipse(W * 0.5, groundY + H * 0.12, W * 0.15, H * 0.07, 0, 0, Math.PI * 2);
+    ctx.ellipse(W * 0.5, groundY + H * 0.22, W * 0.18, H * 0.09, 0, 0, Math.PI * 2);
     ctx.stroke();
-    // Penalty boxes
-    ctx.strokeRect(W * 0.08, groundY, W * 0.18, H * 0.15);
-    ctx.strokeRect(W * 0.74, groundY, W * 0.18, H * 0.15);
-    // Goal areas
-    ctx.strokeRect(W * 0.14, groundY, W * 0.06, H * 0.07);
-    ctx.strokeRect(W * 0.8, groundY, W * 0.06, H * 0.07);
+
+    // Center spot
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.beginPath();
+    ctx.arc(W * 0.5, groundY + H * 0.22, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Left penalty box
+    ctx.strokeRect(margin, groundY + H * 0.04, W * 0.2, H * 0.25);
+    ctx.strokeRect(margin, groundY + H * 0.10, W * 0.1, H * 0.13);
+    // Left goal (on ground line)
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(margin - 3, groundY + H * 0.14, W * 0.04, H * 0.07);
+
+    // Right penalty box
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(W - margin - W * 0.2, groundY + H * 0.04, W * 0.2, H * 0.25);
+    ctx.strokeRect(W - margin - W * 0.1, groundY + H * 0.10, W * 0.1, H * 0.13);
+    // Right goal
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(W - margin - W * 0.01, groundY + H * 0.14, W * 0.04, H * 0.07);
   }
 }
 
