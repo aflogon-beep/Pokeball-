@@ -1,942 +1,659 @@
-// ── PokéBattle Canvas Scenario Engine ───────────────────
-// Base class for animated Canvas-based battle backgrounds
+// PokéBattle Canvas Scenarios — animated battle backgrounds
+// All scenes extend ScenarioCanvas base class
 
 class ScenarioCanvas {
-  constructor(canvasId, sceneData) {
-    this.id = canvasId;
-    this.data = sceneData;
+  constructor(id, data) {
+    this.id = id;
+    this.data = data;
     this.canvas = null;
     this.ctx = null;
     this.raf = null;
     this.t = 0;
-    this.particles = [];
+    this.W = 0;
+    this.H = 0;
   }
 
   init() {
     this.canvas = document.getElementById(this.id);
     if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
-    this.resize();
-    window.addEventListener('resize', () => this.resize());
-    this.setupParticles();
-    this.loop();
+    this._onResize = () => this._resize();
+    window.addEventListener('resize', this._onResize);
+    this._resize();
+    if (!this.W || !this.H) {
+      // Retry for mobile where layout takes time
+      let tries = 0;
+      const retry = () => {
+        this._resize();
+        if ((this.W && this.H) || tries++ > 8) {
+          this.setupParticles();
+          this._loop();
+        } else {
+          setTimeout(retry, 80);
+        }
+      };
+      setTimeout(retry, 50);
+    } else {
+      this.setupParticles();
+      this._loop();
+    }
   }
 
-  resize() {
+  _resize() {
     if (!this.canvas) return;
-    this.canvas.width = this.canvas.offsetWidth;
-    this.canvas.height = this.canvas.offsetHeight;
-    this.W = this.canvas.width;
-    this.H = this.canvas.height;
+    let el = this.canvas;
+    let w = 0, h = 0;
+    while (el && !w) { w = el.offsetWidth || el.clientWidth; el = el.parentElement; }
+    el = this.canvas;
+    while (el && !h) { h = el.offsetHeight || el.clientHeight; el = el.parentElement; }
+    if (!w) w = window.innerWidth || 400;
+    if (!h) h = Math.round(w * 1.1);
+    if (this.canvas.width !== w || this.canvas.height !== h) {
+      this.canvas.width = w;
+      this.canvas.height = h;
+      this.W = w; this.H = h;
+    }
   }
 
-  setupParticles() {}  // override per scene
-
-  loop() {
+  _loop() {
     if (!this.canvas) return;
     this.t += 0.016;
-    this.draw();
-    this.raf = requestAnimationFrame(() => this.loop());
+    this._resize();
+    if (this.W && this.H) this.draw();
+    this.raf = requestAnimationFrame(() => this._loop());
   }
 
-  draw() {}  // override per scene
+  setupParticles() {}
+  draw() {}
 
   destroy() {
     if (this.raf) cancelAnimationFrame(this.raf);
-    window.removeEventListener('resize', this.resize);
+    if (this._onResize) window.removeEventListener('resize', this._onResize);
     this.canvas = null;
-    this.ctx = null;
-  }
-
-  // Utility: draw gradient sky
-  sky(colors) {
-    const g = this.ctx.createLinearGradient(0, 0, 0, this.H * 0.65);
-    colors.forEach(([stop, col]) => g.addColorStop(stop, col));
-    this.ctx.fillStyle = g;
-    this.ctx.fillRect(0, 0, this.W, this.H);
-  }
-
-  // Utility: draw ground
-  ground(y, colors) {
-    const g = this.ctx.createLinearGradient(0, this.H * y, 0, this.H);
-    colors.forEach(([stop, col]) => g.addColorStop(stop, col));
-    this.ctx.fillStyle = g;
-    this.ctx.fillRect(0, this.H * y, this.W, this.H * (1 - y));
-  }
-
-  // Utility: glowing circle
-  glow(x, y, r, color, alpha = 0.6) {
-    const g = this.ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, color.replace(')', `,${alpha})`).replace('rgb', 'rgba'));
-    g.addColorStop(1, 'transparent');
-    this.ctx.fillStyle = g;
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, r, 0, Math.PI * 2);
-    this.ctx.fill();
   }
 }
 
-// ── CUEVA (Cave) ─────────────────────────────────────────
-class ScenaCueva extends ScenarioCanvas {
+// ══════════════════════════════════════════════════════════
+// CAMPO — sunny field with moving clouds, swaying grass, birds
+// ══════════════════════════════════════════════════════════
+class ScenaCampo extends ScenarioCanvas {
   setupParticles() {
-    // Floating embers from lava
-    this.embers = Array.from({ length: 18 }, () => this.newEmber());
-    // Bats
-    this.bats = Array.from({ length: 3 }, (_, i) => ({
-      x: Math.random() * this.W,
-      y: this.H * (0.1 + Math.random() * 0.25),
-      vx: (0.4 + Math.random() * 0.6) * (Math.random() < 0.5 ? 1 : -1),
-      wingPhase: Math.random() * Math.PI * 2,
-      size: 8 + Math.random() * 6,
+    const W = this.W, H = this.H;
+    this.clouds = Array.from({length:5},(_,i)=>({
+      x: (i/5)*W + Math.random()*60,
+      y: H*(0.08+i*0.035),
+      w: 60+Math.random()*70,
+      speed: 0.2+Math.random()*0.2,
+      alpha: 0.88+Math.random()*0.1,
     }));
-    // Dripping water drops
-    this.drops = Array.from({ length: 8 }, () => this.newDrop());
-    // Crystal glow pulses
-    this.crystals = [
-      { x: 0.18, y: 0.52, r: 22, color: '100,200,255', phase: 0 },
-      { x: 0.72, y: 0.55, r: 18, color: '180,100,255', phase: 1.2 },
-      { x: 0.45, y: 0.48, r: 14, color: '100,255,180', phase: 2.4 },
-    ];
+    this.grass = Array.from({length:50},()=>({
+      x: Math.random()*W,
+      h: 10+Math.random()*14,
+      phase: Math.random()*Math.PI*2,
+      col: `hsl(${120+Math.random()*20},${60+Math.random()*20}%,${28+Math.random()*10}%)`,
+    }));
+    this.birds = Array.from({length:4},()=>({
+      x: Math.random()*W, y: H*(0.1+Math.random()*0.2),
+      vx: 0.4+Math.random()*0.5, phase: Math.random()*Math.PI*2,
+    }));
   }
-
-  newEmber() {
-    return {
-      x: (0.05 + Math.random() * 0.2) * (this.W || 400),
-      y: (this.H || 600) * (0.75 + Math.random() * 0.15),
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: -(0.3 + Math.random() * 0.5),
-      life: Math.random(),
-      maxLife: 0.6 + Math.random() * 0.8,
-      size: 1.5 + Math.random() * 2.5,
-      side: Math.random() < 0.5 ? 0 : 1,
-    };
-  }
-
-  newDrop() {
-    return {
-      x: (0.1 + Math.random() * 0.8) * (this.W || 400),
-      y: 0,
-      vy: 1.5 + Math.random() * 2,
-      alpha: 0.4 + Math.random() * 0.4,
-    };
-  }
-
   draw() {
-    const { ctx, W, H, t } = this;
-    ctx.clearRect(0, 0, W, H);
+    const {ctx,W,H,t} = this;
+    ctx.clearRect(0,0,W,H);
+    const gY = H*0.62;
 
-    // Sky — deep cave dark
-    const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.6);
-    skyG.addColorStop(0, '#050303');
-    skyG.addColorStop(0.5, '#110800');
-    skyG.addColorStop(1, '#1a0f05');
-    ctx.fillStyle = skyG;
-    ctx.fillRect(0, 0, W, H);
-
-    // Lava glow on ceiling
-    const lavaGlow = ctx.createRadialGradient(W * 0.15, H * 0.75, 0, W * 0.15, H * 0.75, W * 0.35);
-    lavaGlow.addColorStop(0, 'rgba(255,80,0,0.25)');
-    lavaGlow.addColorStop(1, 'transparent');
-    ctx.fillStyle = lavaGlow;
-    ctx.fillRect(0, 0, W, H);
-
-    const lavaGlow2 = ctx.createRadialGradient(W * 0.82, H * 0.8, 0, W * 0.82, H * 0.8, W * 0.28);
-    lavaGlow2.addColorStop(0, 'rgba(255,100,0,0.2)');
-    lavaGlow2.addColorStop(1, 'transparent');
-    ctx.fillStyle = lavaGlow2;
-    ctx.fillRect(0, 0, W, H);
-
-    // Ground
-    const groundY = H * 0.6;
-    const groundG = ctx.createLinearGradient(0, groundY, 0, H);
-    groundG.addColorStop(0, '#2d1f05');
-    groundG.addColorStop(0.4, '#1a1008');
-    groundG.addColorStop(1, '#0a0703');
-    ctx.fillStyle = groundG;
-    ctx.fillRect(0, groundY, W, H - groundY);
-
-    // Stalactites (ceiling)
-    ctx.fillStyle = '#1a1008';
-    [[0.05, 14], [0.12, 22], [0.25, 16], [0.38, 10], [0.55, 18], [0.68, 12], [0.78, 20], [0.9, 15]].forEach(([px, len]) => {
-      const x = px * W;
-      ctx.beginPath();
-      ctx.moveTo(x - len * 0.5, 0);
-      ctx.lineTo(x + len * 0.5, 0);
-      ctx.lineTo(x, len * 1.8);
-      ctx.closePath();
-      ctx.fill();
-    });
-
-    // Stalagmites (floor)
-    ctx.fillStyle = '#2a1f0a';
-    [[0.03, 20], [0.08, 14], [0.18, 25], [0.65, 18], [0.75, 22], [0.85, 16], [0.93, 20]].forEach(([px, h]) => {
-      const x = px * W;
-      ctx.beginPath();
-      ctx.moveTo(x - h * 0.4, groundY + h * 1.6);
-      ctx.lineTo(x + h * 0.4, groundY + h * 1.6);
-      ctx.lineTo(x, groundY);
-      ctx.closePath();
-      ctx.fill();
-    });
-
-    // Lava pools
-    [[0.12, 0.88, 0.14, 0.04], [0.78, 0.92, 0.11, 0.03]].forEach(([px, py, rx, ry]) => {
-      const lx = px * W, ly = py * H;
-      const pulse = 0.3 + Math.sin(t * 1.5) * 0.1;
-      const lg = ctx.createRadialGradient(lx, ly, 0, lx, ly, rx * W);
-      lg.addColorStop(0, `rgba(255,160,0,${pulse + 0.4})`);
-      lg.addColorStop(0.5, `rgba(255,60,0,${pulse})`);
-      lg.addColorStop(1, 'rgba(100,20,0,0)');
-      ctx.fillStyle = lg;
-      ctx.beginPath();
-      ctx.ellipse(lx, ly, rx * W, ry * H, 0, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Crystals glow
-    this.crystals.forEach(cr => {
-      const alpha = 0.2 + Math.sin(t * 1.2 + cr.phase) * 0.12;
-      const x = cr.x * W, y = cr.y * H;
-      const g = ctx.createRadialGradient(x, y, 0, x, y, cr.r * (1 + Math.sin(t + cr.phase) * 0.15));
-      g.addColorStop(0, `rgba(${cr.color},${alpha + 0.1})`);
-      g.addColorStop(1, 'transparent');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(x, y, cr.r * 2, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Embers from lava
-    this.embers.forEach(em => {
-      em.life += 0.008;
-      em.x += em.vx + Math.sin(t * 2 + em.x) * 0.15;
-      em.y += em.vy;
-      if (em.life > em.maxLife) Object.assign(em, this.newEmber());
-      const alpha = Math.sin((em.life / em.maxLife) * Math.PI) * 0.9;
-      ctx.fillStyle = `rgba(255,${120 + Math.floor(em.size * 20)},0,${alpha})`;
-      ctx.beginPath();
-      ctx.arc(em.x, em.y, em.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Bats
-    this.bats.forEach(bat => {
-      bat.x += bat.vx;
-      bat.wingPhase += 0.12;
-      if (bat.x < -20) bat.x = W + 20;
-      if (bat.x > W + 20) bat.x = -20;
-      const wx = bat.size;
-      const wy = bat.size * 0.5 * Math.sin(bat.wingPhase);
-      ctx.fillStyle = 'rgba(20,10,5,0.85)';
-      ctx.beginPath();
-      ctx.ellipse(bat.x, bat.y, wx, Math.abs(wy) + 2, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Wing lines
-      ctx.strokeStyle = 'rgba(40,20,10,0.6)';
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.moveTo(bat.x - wx, bat.y);
-      ctx.quadraticCurveTo(bat.x, bat.y + wy, bat.x + wx, bat.y);
-      ctx.stroke();
-    });
-
-    // Water drips
-    this.drops.forEach(d => {
-      d.y += d.vy;
-      if (d.y > groundY) {
-        d.y = 0;
-        d.x = (0.1 + Math.random() * 0.8) * W;
-      }
-      ctx.fillStyle = `rgba(100,180,255,${d.alpha})`;
-      ctx.beginPath();
-      ctx.ellipse(d.x, d.y, 1.5, 3, 0, 0, Math.PI * 2);
-      ctx.fill();
-    });
-  }
-}
-
-// ── PLAYA (Beach) ────────────────────────────────────────
-class ScenaPlaya extends ScenarioCanvas {
-  setupParticles() {
-    this.waveOffset = 0;
-    this.clouds = Array.from({ length: 4 }, (_, i) => ({
-      x: Math.random() * (this.W || 400),
-      y: (0.12 + i * 0.06) * (this.H || 600),
-      w: 60 + Math.random() * 80,
-      speed: 0.15 + Math.random() * 0.2,
-      alpha: 0.4 + Math.random() * 0.3,
-    }));
-    this.seagulls = Array.from({ length: 3 }, () => ({
-      x: Math.random() * (this.W || 400),
-      y: (0.1 + Math.random() * 0.2) * (this.H || 600),
-      vx: 0.3 + Math.random() * 0.4,
-      phase: Math.random() * Math.PI * 2,
-      size: 4 + Math.random() * 3,
-    }));
-  }
-
-  draw() {
-    const { ctx, W, H, t } = this;
-    ctx.clearRect(0, 0, W, H);
-
-    // Sunset sky
-    const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.65);
-    skyG.addColorStop(0, '#1a0a3e');
-    skyG.addColorStop(0.25, '#8B2500');
-    skyG.addColorStop(0.5, '#FF6B35');
-    skyG.addColorStop(0.75, '#FFB347');
-    skyG.addColorStop(1, '#87CEEB');
-    ctx.fillStyle = skyG;
-    ctx.fillRect(0, 0, W, H);
+    // Sky
+    const sg = ctx.createLinearGradient(0,0,0,gY);
+    sg.addColorStop(0,'#3a8fd8'); sg.addColorStop(0.6,'#87CEEB'); sg.addColorStop(1,'#b8e4f7');
+    ctx.fillStyle=sg; ctx.fillRect(0,0,W,gY);
 
     // Sun
-    const sunX = W * 0.72, sunY = H * 0.28;
-    const sunPulse = 1 + Math.sin(t * 0.5) * 0.02;
-    const sunG = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 50 * sunPulse);
-    sunG.addColorStop(0, 'rgba(255,255,200,1)');
-    sunG.addColorStop(0.3, 'rgba(255,220,100,0.9)');
-    sunG.addColorStop(0.6, 'rgba(255,160,50,0.5)');
-    sunG.addColorStop(1, 'transparent');
-    ctx.fillStyle = sunG;
-    ctx.beginPath();
-    ctx.arc(sunX, sunY, 50 * sunPulse, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Sun reflection on water
-    const reflG = ctx.createLinearGradient(sunX - 30, H * 0.6, sunX + 30, H);
-    reflG.addColorStop(0, 'rgba(255,180,50,0.3)');
-    reflG.addColorStop(1, 'transparent');
-    ctx.fillStyle = reflG;
-    ctx.fillRect(sunX - 20, H * 0.6, 40, H * 0.4);
+    const sx=W*0.78, sy=H*0.1, sr=H*0.055;
+    const sunG = ctx.createRadialGradient(sx,sy,0,sx,sy,sr*2.5);
+    sunG.addColorStop(0,'rgba(255,255,180,1)'); sunG.addColorStop(0.4,'rgba(255,220,80,.6)'); sunG.addColorStop(1,'transparent');
+    ctx.fillStyle=sunG; ctx.beginPath(); ctx.arc(sx,sy,sr*2.5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#FFFAAA'; ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
 
     // Clouds
-    this.clouds.forEach(cl => {
+    this.clouds.forEach(cl=>{
       cl.x += cl.speed;
-      if (cl.x > W + cl.w) cl.x = -cl.w;
-      ctx.fillStyle = `rgba(255,220,180,${cl.alpha})`;
-      ctx.beginPath();
-      ctx.ellipse(cl.x, cl.y, cl.w, cl.w * 0.3, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(cl.x - cl.w * 0.3, cl.y, cl.w * 0.6, cl.w * 0.25, 0, 0, Math.PI * 2);
-      ctx.fill();
+      if(cl.x > W+cl.w*1.5) cl.x = -cl.w;
+      ctx.fillStyle=`rgba(255,255,255,${cl.alpha})`;
+      [[0,0,1],[-.35,.08,.7],[.35,.08,.65],[-.15,-.28,.55],[.2,-.22,.5]].forEach(([dx,dy,s])=>{
+        ctx.beginPath(); ctx.ellipse(cl.x+dx*cl.w, cl.y+dy*cl.w*.4, cl.w*.38*s, cl.w*.2*s, 0, 0, Math.PI*2); ctx.fill();
+      });
     });
 
-    // Sea/water
-    const seaY = H * 0.58;
-    const seaG = ctx.createLinearGradient(0, seaY, 0, H * 0.72);
-    seaG.addColorStop(0, '#1a4a8a');
-    seaG.addColorStop(0.4, '#2060aa');
-    seaG.addColorStop(1, '#3a80c0');
-    ctx.fillStyle = seaG;
-    ctx.fillRect(0, seaY, W, H * 0.72 - seaY);
+    // Tree silhouettes horizon
+    [[0.03,0.22],[0.08,0.18],[0.88,0.2],[0.94,0.16]].forEach(([px,ph])=>{
+      const tx=px*W, th=ph*H;
+      ctx.fillStyle='#1a5c1a';
+      ctx.beginPath(); ctx.ellipse(tx, gY-th*.5, th*.28, th*.55, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='#0f3d0f'; ctx.fillRect(tx-4,gY-th*.1,8,th*.12);
+    });
 
-    // Animated waves (3 layers)
-    this.waveOffset += 0.02;
-    [0, 0.33, 0.66].forEach((off, wi) => {
-      const wy = H * (0.62 + wi * 0.018);
-      const alpha = 0.5 - wi * 0.12;
-      ctx.strokeStyle = `rgba(150,210,255,${alpha})`;
-      ctx.lineWidth = 2 - wi * 0.4;
+    // Ground stripes
+    for(let i=0;i<6;i++){
+      const py=gY+i*(H-gY)/6;
+      ctx.fillStyle=i%2===0?'#3a7a3a':'#347034';
+      ctx.fillRect(0,py,W,(H-gY)/6+1);
+    }
+
+    // Grass blades
+    ctx.lineWidth=1.2;
+    this.grass.forEach(g=>{
+      const sway=Math.sin(t*1.3+g.phase)*3.5;
+      ctx.strokeStyle=g.col;
+      ctx.beginPath(); ctx.moveTo(g.x,gY); ctx.quadraticCurveTo(g.x+sway,gY-g.h*.6,g.x+sway*1.5,gY-g.h); ctx.stroke();
+    });
+
+    // Birds
+    this.birds.forEach(b=>{
+      b.x+=b.vx; b.phase+=0.1;
+      if(b.x>W+20) b.x=-20;
+      const wy=Math.sin(b.phase)*3;
+      ctx.strokeStyle='rgba(20,20,20,.55)'; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.moveTo(b.x-6,b.y+wy); ctx.quadraticCurveTo(b.x,b.y-3,b.x+6,b.y+wy); ctx.stroke();
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// GALAXIA — deep space with stars, nebulae, meteors
+// ══════════════════════════════════════════════════════════
+class ScenaGalaxia extends ScenarioCanvas {
+  setupParticles() {
+    const W=this.W, H=this.H;
+    this.stars = Array.from({length:140},()=>({
+      x:Math.random()*W, y:Math.random()*H*.72,
+      r:0.3+Math.random()*1.8, phase:Math.random()*Math.PI*2,
+      speed:0.3+Math.random()*2,
+      col:Math.random()<0.15?'200,220,255':Math.random()<0.08?'255,200,200':'255,255,255',
+    }));
+    this.nebulas = [
+      {x:.28,y:.25,rx:.22,ry:.13,col:'80,30,120',ph:0},
+      {x:.68,y:.18,rx:.18,ry:.11,col:'20,60,130',ph:1.1},
+      {x:.5,y:.4,rx:.16,ry:.09,col:'100,20,60',ph:2.2},
+    ];
+    this.meteors = [];
+    this.mTimer = 0;
+  }
+  draw() {
+    const {ctx,W,H,t} = this;
+    ctx.clearRect(0,0,W,H);
+    const gY = H*0.65;
+
+    // Space bg
+    const sg=ctx.createLinearGradient(0,0,0,H);
+    sg.addColorStop(0,'#000308'); sg.addColorStop(.5,'#02000f'); sg.addColorStop(1,'#060018');
+    ctx.fillStyle=sg; ctx.fillRect(0,0,W,H);
+
+    // Nebulas
+    this.nebulas.forEach(nb=>{
+      const p=1+Math.sin(t*.4+nb.ph)*.08;
+      const g=ctx.createRadialGradient(nb.x*W,nb.y*H,0,nb.x*W,nb.y*H,nb.rx*W*p);
+      g.addColorStop(0,`rgba(${nb.col},.2)`); g.addColorStop(.5,`rgba(${nb.col},.08)`); g.addColorStop(1,'transparent');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(nb.x*W,nb.y*H,nb.rx*W*p,nb.ry*H*p,0,0,Math.PI*2); ctx.fill();
+    });
+
+    // Stars twinkling
+    this.stars.forEach(s=>{
+      const a=0.3+Math.sin(t*s.speed+s.phase)*.55;
+      const r=s.r*(0.7+Math.sin(t*s.speed+s.phase)*.35);
+      ctx.fillStyle=`rgba(${s.col},${a})`; ctx.beginPath(); ctx.arc(s.x,s.y,r,0,Math.PI*2); ctx.fill();
+    });
+
+    // Meteors
+    this.mTimer+=0.016;
+    if(this.mTimer>2.5+Math.random()*4){this.mTimer=0;this.meteors.push({x:Math.random()*W,y:0,vx:3+Math.random()*5,vy:2+Math.random()*4,life:1});}
+    this.meteors=this.meteors.filter(m=>{
+      m.x+=m.vx;m.y+=m.vy;m.life-=0.03;
+      if(m.life<=0)return false;
+      ctx.strokeStyle=`rgba(200,220,255,${m.life*.9})`; ctx.lineWidth=m.life*2.5;
+      ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(m.x-m.vx*8,m.y-m.vy*8); ctx.stroke();
+      return true;
+    });
+
+    // Ground (asteroid surface)
+    const gg=ctx.createLinearGradient(0,gY,0,H);
+    gg.addColorStop(0,'#0a0520'); gg.addColorStop(.5,'#060310'); gg.addColorStop(1,'#020108');
+    ctx.fillStyle=gg; ctx.fillRect(0,gY,W,H-gY);
+
+    // Rock silhouettes
+    ctx.fillStyle='rgba(12,8,25,.95)';
+    [[.04,.09],[.12,.06],[.77,.08],[.87,.05],[.95,.07]].forEach(([px,ph])=>{
+      ctx.beginPath(); ctx.ellipse(px*W,gY,ph*W,ph*H*.4,0,0,Math.PI*2); ctx.fill();
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// ESTADIO — Pokémon stadium with spotlights + crowd
+// ══════════════════════════════════════════════════════════
+class ScenaEstadio extends ScenarioCanvas {
+  setupParticles() {
+    const W=this.W,H=this.H;
+    this.spots=[{x:.18,ph:0},{x:.5,ph:Math.PI},{x:.82,ph:Math.PI*.5}];
+    this.crowd=Array.from({length:80},()=>({x:Math.random(),row:Math.floor(Math.random()*4),ph:Math.random()*Math.PI*2,col:`hsl(${Math.floor(Math.random()*360)},75%,58%)`}));
+    this.flashes=[];this.fTimer=0;
+  }
+  draw() {
+    const {ctx,W,H,t}=this;
+    ctx.clearRect(0,0,W,H);
+    const gY=H*.62;
+
+    // Dark arena bg
+    ctx.fillStyle='#05080f'; ctx.fillRect(0,0,W,H);
+
+    // Stands rows
+    const standH=gY*.52;
+    for(let row=0;row<4;row++){
+      const ry=standH*(0.1+row*.25),rh=standH*.2;
+      ctx.fillStyle=`rgba(12,15,30,.8)`;ctx.fillRect(0,ry,W,rh);
+      this.crowd.filter(c=>c.row===row).forEach(c=>{
+        const cx=c.x*W, wave=Math.sin(t*1.8+c.ph)*2.5;
+        ctx.fillStyle=c.col; ctx.beginPath(); ctx.arc(cx,ry+rh*.35+wave,2.8,0,Math.PI*2); ctx.fill();
+      });
+    }
+
+    // Spotlights
+    this.spots.forEach(sl=>{
+      sl.ph+=0.007;
+      const sx=(sl.x+Math.sin(sl.ph)*.12)*W;
+      const lg=ctx.createConicalGradient?null:ctx.createRadialGradient(sx,0,0,sx,gY*.6,H*.4);
+      const lg2=ctx.createLinearGradient(sx-H*.25,gY*.6,sx+H*.25,gY*.6);
+      lg2.addColorStop(0,'transparent'); lg2.addColorStop(.5,`rgba(220,230,255,.07)`); lg2.addColorStop(1,'transparent');
+      ctx.fillStyle=lg2; ctx.beginPath(); ctx.moveTo(sx,0); ctx.lineTo(sx-H*.22,gY*.6); ctx.lineTo(sx+H*.22,gY*.6); ctx.closePath(); ctx.fill();
+    });
+
+    // Camera flashes
+    this.fTimer+=0.016;
+    if(this.fTimer>0.4+Math.random()*2){this.fTimer=0;this.flashes.push({x:Math.random()*W,y:Math.random()*gY*.45,life:1});}
+    this.flashes=this.flashes.filter(fl=>{fl.life-=0.09;if(fl.life<=0)return false;ctx.fillStyle=`rgba(255,255,255,${fl.life*.7})`;ctx.beginPath();ctx.arc(fl.x,fl.y,fl.life*5,0,Math.PI*2);ctx.fill();return true;});
+
+    // Arena floor
+    const fg=ctx.createLinearGradient(0,gY,0,H);
+    fg.addColorStop(0,'#1a2040'); fg.addColorStop(.5,'#0f1528'); fg.addColorStop(1,'#080d18');
+    ctx.fillStyle=fg; ctx.fillRect(0,gY,W,H-gY);
+
+    // Arena circle glow
+    const glow=.3+Math.sin(t*2)*.1;
+    ctx.strokeStyle=`rgba(59,130,246,${glow+.2})`; ctx.lineWidth=2;
+    ctx.shadowColor='#3B82F6'; ctx.shadowBlur=10;
+    ctx.beginPath(); ctx.ellipse(W*.5,gY+H*.06,W*.4,H*.055,0,0,Math.PI*2); ctx.stroke();
+    ctx.shadowBlur=0;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FÚTBOL — proper football pitch with perspective + fans
+// ══════════════════════════════════════════════════════════
+class ScenaFutbol extends ScenarioCanvas {
+  setupParticles() {
+    const W=this.W,H=this.H;
+    this.clouds=Array.from({length:4},(_,i)=>({x:(i/4)*W,y:H*(0.06+i*.04),w:55+Math.random()*55,speed:.18+Math.random()*.15,alpha:.9}));
+    this.fans=Array.from({length:90},()=>({x:Math.random(),row:Math.floor(Math.random()*3),ph:Math.random()*Math.PI*2,col:`hsl(${Math.floor(Math.random()*360)},80%,60%)`}));
+  }
+  draw() {
+    const {ctx,W,H,t}=this;
+    if(!W||!H)return;
+    ctx.clearRect(0,0,W,H);
+    const gY=H*.58; // pitch starts here
+
+    // Sky
+    const sg=ctx.createLinearGradient(0,0,0,gY);
+    sg.addColorStop(0,'#0b2a6e'); sg.addColorStop(.45,'#1a5aaa'); sg.addColorStop(1,'#4a8fd4');
+    ctx.fillStyle=sg; ctx.fillRect(0,0,W,gY);
+
+    // Stands (top third of sky area)
+    const stH=gY*.5;
+    ctx.fillStyle='#0f1530'; ctx.fillRect(0,0,W,stH);
+    for(let row=0;row<3;row++){
+      const ry=stH*(0.08+row*.32),rh=stH*.2;
+      ctx.fillStyle='rgba(15,18,40,.7)'; ctx.fillRect(0,ry,W,rh);
+      this.fans.filter(f=>f.row===row).forEach(f=>{
+        const wave=Math.sin(t*2+f.ph)*3;
+        ctx.fillStyle=f.col; ctx.beginPath(); ctx.arc(f.x*W,ry+rh*.3+wave,2.5,0,Math.PI*2); ctx.fill();
+      });
+    }
+
+    // Floodlights
+    [[.03,.45],[.97,.45]].forEach(([px,py])=>{
+      const lx=px*W,ly=py*H;
+      ctx.strokeStyle='#ccc'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(lx,gY); ctx.lineTo(lx,ly); ctx.stroke();
+      const lg=ctx.createRadialGradient(lx,ly,0,lx,ly,35);
+      lg.addColorStop(0,'rgba(255,240,180,.55)'); lg.addColorStop(1,'transparent');
+      ctx.fillStyle=lg; ctx.beginPath(); ctx.arc(lx,ly,35,0,Math.PI*2); ctx.fill();
+    });
+
+    // Clouds
+    this.clouds.forEach(cl=>{
+      cl.x+=cl.speed; if(cl.x>W+cl.w) cl.x=-cl.w;
+      ctx.fillStyle=`rgba(255,255,255,${cl.alpha*.6})`;
+      ctx.beginPath(); ctx.ellipse(cl.x,cl.y,cl.w*.5,cl.w*.2,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cl.x-cl.w*.28,cl.y+4,cl.w*.32,cl.w*.16,0,0,Math.PI*2); ctx.fill();
+    });
+
+    // ── Pitch stripes (perspective: narrower at top)
+    const stripes=10;
+    for(let i=0;i<stripes;i++){
+      const py=gY+i*(H-gY)/stripes;
+      ctx.fillStyle=i%2===0?'#1a6b1a':'#157015';
+      ctx.fillRect(0,py,W,(H-gY)/stripes+1);
+    }
+    // Perspective fade at top of pitch
+    const pf=ctx.createLinearGradient(0,gY,0,gY+H*.1);
+    pf.addColorStop(0,'rgba(0,0,0,.35)'); pf.addColorStop(1,'transparent');
+    ctx.fillStyle=pf; ctx.fillRect(0,gY,W,H*.1);
+
+    // ── Pitch markings with proper perspective
+    const m=W*.04; // margin
+    ctx.save();
+    ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.lineWidth=1.8;
+
+    // Boundary
+    ctx.strokeRect(m,gY+H*.01,W-m*2,H-gY-H*.02);
+    // Halfway line
+    ctx.beginPath(); ctx.moveTo(W*.5,gY+H*.01); ctx.lineTo(W*.5,H-H*.01); ctx.stroke();
+    // Centre circle (ellipse for perspective)
+    ctx.beginPath(); ctx.ellipse(W*.5,gY+H*.2,W*.17,H*.085,0,0,Math.PI*2); ctx.stroke();
+    // Centre spot
+    ctx.fillStyle='rgba(255,255,255,.65)';
+    ctx.beginPath(); ctx.arc(W*.5,gY+H*.2,3.5,0,Math.PI*2); ctx.fill();
+    // Left penalty box
+    ctx.strokeRect(m,gY+H*.05,W*.22,H*.26);
+    ctx.strokeRect(m,gY+H*.1,W*.11,H*.14);
+    // Right penalty box
+    ctx.strokeRect(W-m-W*.22,gY+H*.05,W*.22,H*.26);
+    ctx.strokeRect(W-m-W*.11,gY+H*.1,W*.11,H*.14);
+    // Goal posts
+    ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=2.5;
+    ctx.strokeRect(m-4,gY+H*.13,W*.035,H*.08);
+    ctx.strokeRect(W-m-W*.035+4,gY+H*.13,W*.035,H*.08);
+    ctx.restore();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// CUEVA — dark cave with lava, bats, crystal glow, drips
+// ══════════════════════════════════════════════════════════
+class ScenaCueva extends ScenarioCanvas {
+  setupParticles() {
+    const W=this.W,H=this.H;
+    this.embers=Array.from({length:20},()=>this._newEmber(W,H));
+    this.bats=Array.from({length:4},()=>({x:Math.random()*W,y:H*(0.1+Math.random()*.25),vx:(0.5+Math.random()*.7)*(Math.random()<.5?1:-1),wp:Math.random()*Math.PI*2,sz:8+Math.random()*6}));
+    this.drops=Array.from({length:10},()=>this._newDrop(W,H));
+    this.crystals=[{x:.18,y:.5,r:24,col:'100,200,255',ph:0},{x:.72,y:.53,r:18,col:'180,100,255',ph:1.3},{x:.45,y:.47,r:14,col:'100,255,160',ph:2.5}];
+  }
+  _newEmber(W,H){return{x:(Math.random()<.5?0.05+Math.random()*.18:0.78+Math.random()*.17)*W,y:H*(.72+Math.random()*.18),vx:(Math.random()-.5)*.5,vy:-(0.4+Math.random()*.6),life:Math.random(),maxLife:.5+Math.random()*.9,sz:1.5+Math.random()*2.5};}
+  _newDrop(W,H){return{x:(.05+Math.random()*.9)*W,y:0,vy:1.8+Math.random()*2.5,a:.4+Math.random()*.4};}
+  draw() {
+    const {ctx,W,H,t}=this;
+    ctx.clearRect(0,0,W,H);
+    const gY=H*.6;
+
+    // Dark cave bg
+    const sg=ctx.createLinearGradient(0,0,0,H);
+    sg.addColorStop(0,'#040202'); sg.addColorStop(.5,'#0e0700'); sg.addColorStop(1,'#1a0e04');
+    ctx.fillStyle=sg; ctx.fillRect(0,0,W,H);
+
+    // Lava glow on walls
+    [{x:.12,y:.8,r:.38},{x:.82,y:.82,r:.3}].forEach(l=>{
+      const p=.28+Math.sin(t*1.2)*.08;
+      const g=ctx.createRadialGradient(l.x*W,l.y*H,0,l.x*W,l.y*H,l.r*W);
+      g.addColorStop(0,`rgba(255,90,0,${p+.15})`); g.addColorStop(.5,`rgba(255,50,0,${p})`); g.addColorStop(1,'transparent');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    });
+
+    // Stalactites
+    ctx.fillStyle='#120a03';
+    [[.05,16],[.13,26],[.24,18],[.36,12],[.52,20],[.65,14],[.76,22],[.88,16],[.95,12]].forEach(([px,l])=>{
+      const x=px*W;
+      ctx.beginPath(); ctx.moveTo(x-l*.6,0); ctx.lineTo(x+l*.6,0); ctx.lineTo(x,l*2.2); ctx.closePath(); ctx.fill();
+    });
+
+    // Stalagmites
+    ctx.fillStyle='#251806';
+    [[.04,18],[.09,24],[.19,28],[.62,20],[.73,26],[.84,18],[.92,22]].forEach(([px,h])=>{
+      const x=px*W;
+      ctx.beginPath(); ctx.moveTo(x-h*.45,gY+h*1.6); ctx.lineTo(x+h*.45,gY+h*1.6); ctx.lineTo(x,gY); ctx.closePath(); ctx.fill();
+    });
+
+    // Ground
+    const gg=ctx.createLinearGradient(0,gY,0,H);
+    gg.addColorStop(0,'#2d1f05'); gg.addColorStop(.4,'#1a1008'); gg.addColorStop(1,'#080503');
+    ctx.fillStyle=gg; ctx.fillRect(0,gY,W,H-gY);
+
+    // Lava pools
+    [[.12,.88,.13,.04],[.8,.92,.1,.03]].forEach(([px,py,rx,ry])=>{
+      const p=.35+Math.sin(t*1.5)*.12;
+      const g=ctx.createRadialGradient(px*W,py*H,0,px*W,py*H,rx*W);
+      g.addColorStop(0,`rgba(255,160,0,${p+.45})`); g.addColorStop(.5,`rgba(255,60,0,${p})`); g.addColorStop(1,'rgba(80,15,0,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(px*W,py*H,rx*W,ry*H,0,0,Math.PI*2); ctx.fill();
+    });
+
+    // Crystal glows
+    this.crystals.forEach(cr=>{
+      const a=.2+Math.sin(t*1.2+cr.ph)*.12, rx=cr.x*W, ry=cr.y*H;
+      const g=ctx.createRadialGradient(rx,ry,0,rx,ry,cr.r*(1+Math.sin(t+cr.ph)*.15));
+      g.addColorStop(0,`rgba(${cr.col},${a+.1})`); g.addColorStop(1,'transparent');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(rx,ry,cr.r*2.5,0,Math.PI*2); ctx.fill();
+    });
+
+    // Embers
+    this.embers.forEach(em=>{
+      em.life+=0.009; em.x+=em.vx+Math.sin(t*2+em.x)*.15; em.y+=em.vy;
+      if(em.life>em.maxLife) Object.assign(em,this._newEmber(W,H));
+      const a=Math.sin(em.life/em.maxLife*Math.PI)*.9;
+      ctx.fillStyle=`rgba(255,${110+Math.floor(em.sz*22)},0,${a})`;
+      ctx.beginPath(); ctx.arc(em.x,em.y,em.sz,0,Math.PI*2); ctx.fill();
+    });
+
+    // Bats
+    this.bats.forEach(bat=>{
+      bat.x+=bat.vx; bat.wp+=0.13;
+      if(bat.x<-20) bat.x=W+20; if(bat.x>W+20) bat.x=-20;
+      const wy=Math.abs(Math.sin(bat.wp))*bat.sz*.5+2;
+      ctx.fillStyle='rgba(15,8,4,.9)';
+      ctx.beginPath(); ctx.ellipse(bat.x,bat.y,bat.sz,wy,0,0,Math.PI*2); ctx.fill();
+    });
+
+    // Drips
+    this.drops.forEach(d=>{
+      d.y+=d.vy; if(d.y>gY){Object.assign(d,this._newDrop(W,H));}
+      ctx.fillStyle=`rgba(100,180,255,${d.a})`; ctx.beginPath(); ctx.ellipse(d.x,d.y,1.5,3,0,0,Math.PI*2); ctx.fill();
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// PLAYA — tropical beach sunset with animated waves
+// ══════════════════════════════════════════════════════════
+class ScenaPlaya extends ScenarioCanvas {
+  setupParticles() {
+    const W=this.W,H=this.H;
+    this.wOff=0;
+    this.clouds=Array.from({length:4},(_,i)=>({x:(i/4)*W,y:H*(0.08+i*.04),w:65+Math.random()*55,speed:.18+Math.random()*.15,alpha:.8}));
+    this.gulls=Array.from({length:3},()=>({x:Math.random()*W,y:H*(0.1+Math.random()*.2),vx:.4+Math.random()*.4,ph:Math.random()*Math.PI*2,sz:4+Math.random()*3}));
+  }
+  draw() {
+    const {ctx,W,H,t}=this;
+    ctx.clearRect(0,0,W,H);
+    const gY=H*.65;
+
+    // Sunset sky
+    const sg=ctx.createLinearGradient(0,0,0,gY);
+    sg.addColorStop(0,'#1a0840'); sg.addColorStop(.2,'#7B2800'); sg.addColorStop(.45,'#FF6B35');
+    sg.addColorStop(.7,'#FFB347'); sg.addColorStop(1,'#7ac8e0');
+    ctx.fillStyle=sg; ctx.fillRect(0,0,W,gY);
+
+    // Sun
+    const sx=W*.72,sy=H*.25, sp=1+Math.sin(t*.5)*.02;
+    const sunG=ctx.createRadialGradient(sx,sy,0,sx,sy,55*sp);
+    sunG.addColorStop(0,'rgba(255,255,190,1)'); sunG.addColorStop(.35,'rgba(255,215,80,.8)'); sunG.addColorStop(.7,'rgba(255,150,40,.4)'); sunG.addColorStop(1,'transparent');
+    ctx.fillStyle=sunG; ctx.beginPath(); ctx.arc(sx,sy,55*sp,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#FFF5AA'; ctx.beginPath(); ctx.arc(sx,sy,H*.045,0,Math.PI*2); ctx.fill();
+
+    // Clouds
+    this.clouds.forEach(cl=>{
+      cl.x+=cl.speed; if(cl.x>W+cl.w) cl.x=-cl.w;
+      ctx.fillStyle=`rgba(255,210,160,${cl.alpha})`;
+      ctx.beginPath(); ctx.ellipse(cl.x,cl.y,cl.w*.5,cl.w*.22,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cl.x-cl.w*.3,cl.y+5,cl.w*.32,cl.w*.16,0,0,Math.PI*2); ctx.fill();
+    });
+
+    // Sea
+    const seaY=gY*.88;
+    const seaG=ctx.createLinearGradient(0,seaY,0,gY);
+    seaG.addColorStop(0,'#1848a0'); seaG.addColorStop(.5,'#1e5fc0'); seaG.addColorStop(1,'#3a80d0');
+    ctx.fillStyle=seaG; ctx.fillRect(0,seaY,W,gY-seaY);
+
+    // Sun reflection
+    const refG=ctx.createLinearGradient(sx-25,seaY,sx+25,gY);
+    refG.addColorStop(0,'rgba(255,180,50,.35)'); refG.addColorStop(1,'transparent');
+    ctx.fillStyle=refG; ctx.fillRect(sx-20,seaY,40,gY-seaY);
+
+    // Waves
+    this.wOff+=0.02;
+    [0,.33,.66].forEach((off,wi)=>{
+      const wy=gY*(.88+wi*.025), a=.55-wi*.12;
+      ctx.strokeStyle=`rgba(150,215,255,${a})`; ctx.lineWidth=2-wi*.3;
       ctx.beginPath();
-      for (let x = 0; x <= W; x += 3) {
-        const y = wy + Math.sin((x / W) * Math.PI * 4 + this.waveOffset + off * Math.PI * 2) * (5 - wi * 1.2);
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      for(let x=0;x<=W;x+=4){
+        const y=wy+Math.sin(x/W*Math.PI*5+this.wOff+off*Math.PI*2)*(6-wi*1.5);
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
       }
       ctx.stroke();
     });
 
     // Sandy beach
-    const sandY = H * 0.68;
-    const sandG = ctx.createLinearGradient(0, sandY, 0, H);
-    sandG.addColorStop(0, '#C4A882');
-    sandG.addColorStop(0.3, '#D4B896');
-    sandG.addColorStop(0.7, '#E8D5B0');
-    sandG.addColorStop(1, '#F0E0C0');
-    ctx.fillStyle = sandG;
-    ctx.fillRect(0, sandY, W, H - sandY);
+    const sandG=ctx.createLinearGradient(0,gY,0,H);
+    sandG.addColorStop(0,'#C4A882'); sandG.addColorStop(.4,'#D4B896'); sandG.addColorStop(1,'#E8D5B0');
+    ctx.fillStyle=sandG; ctx.fillRect(0,gY,W,H-gY);
 
-    // Palm trees
-    this.drawPalm(ctx, W * 0.05, sandY, H * 0.25, -0.2);
-    this.drawPalm(ctx, W * 0.92, sandY, H * 0.22, 0.25);
+    // Palms
+    this._palm(ctx,W*.04,gY,H*.28,-0.22);
+    this._palm(ctx,W*.93,gY,H*.24,0.28);
 
     // Seagulls
-    this.seagulls.forEach(sg => {
-      sg.x += sg.vx;
-      sg.phase += 0.08;
-      sg.y += Math.sin(sg.phase) * 0.3;
-      if (sg.x > W + 20) sg.x = -20;
-      ctx.strokeStyle = 'rgba(20,10,5,0.7)';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(sg.x - sg.size, sg.y + Math.sin(sg.phase) * 2);
-      ctx.quadraticCurveTo(sg.x, sg.y - sg.size * 0.5, sg.x + sg.size, sg.y + Math.sin(sg.phase) * 2);
-      ctx.stroke();
+    this.gulls.forEach(g=>{
+      g.x+=g.vx; g.ph+=0.09; g.y+=Math.sin(g.ph)*.35;
+      if(g.x>W+20) g.x=-20;
+      ctx.strokeStyle='rgba(20,10,5,.7)'; ctx.lineWidth=1.3;
+      ctx.beginPath(); ctx.moveTo(g.x-g.sz,g.y+Math.sin(g.ph)*2.5); ctx.quadraticCurveTo(g.x,g.y-g.sz*.5,g.x+g.sz,g.y+Math.sin(g.ph)*2.5); ctx.stroke();
     });
   }
-
-  drawPalm(ctx, x, groundY, h, lean) {
-    // Trunk
-    ctx.strokeStyle = '#8B6914';
-    ctx.lineWidth = Math.max(3, h * 0.04);
-    ctx.beginPath();
-    ctx.moveTo(x, groundY);
-    const topX = x + lean * h * 0.6;
-    const topY = groundY - h;
-    ctx.quadraticCurveTo(x + lean * h * 0.3, groundY - h * 0.5, topX, topY);
-    ctx.stroke();
-    // Leaves
-    [[-0.8, -0.6], [0.8, -0.5], [-0.3, -0.9], [0.3, -0.85], [0, -1]].forEach(([dx, dy]) => {
-      ctx.strokeStyle = `rgba(${lean < 0 ? '30,100,30' : '40,120,40'},0.85)`;
-      ctx.lineWidth = Math.max(2, h * 0.025);
-      ctx.beginPath();
-      ctx.moveTo(topX, topY);
-      ctx.quadraticCurveTo(
-        topX + dx * h * 0.25,
-        topY + dy * h * 0.15,
-        topX + dx * h * 0.45,
-        topY + dy * h * 0.3
-      );
-      ctx.stroke();
+  _palm(ctx,x,gY,h,lean){
+    ctx.strokeStyle='#8B6914'; ctx.lineWidth=Math.max(3,h*.04);
+    ctx.beginPath(); ctx.moveTo(x,gY); ctx.quadraticCurveTo(x+lean*h*.3,gY-h*.5,x+lean*h*.6,gY-h); ctx.stroke();
+    const tx=x+lean*h*.6, ty=gY-h;
+    [[-0.8,-0.6],[0.8,-0.5],[-0.3,-0.9],[0.3,-0.85],[0,-1]].forEach(([dx,dy])=>{
+      ctx.strokeStyle='rgba(30,100,30,.9)'; ctx.lineWidth=Math.max(2,h*.025);
+      ctx.beginPath(); ctx.moveTo(tx,ty); ctx.quadraticCurveTo(tx+dx*h*.25,ty+dy*h*.15,tx+dx*h*.44,ty+dy*h*.3); ctx.stroke();
     });
   }
 }
 
-// ── NOCHE (Night) ────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// NOCHE — full moon night with fireflies, mist, stars
+// ══════════════════════════════════════════════════════════
 class ScenaNoche extends ScenarioCanvas {
   setupParticles() {
-    // Stars
-    this.stars = Array.from({ length: 80 }, () => ({
-      x: Math.random() * (this.W || 400),
-      y: Math.random() * (this.H || 600) * 0.65,
-      r: 0.5 + Math.random() * 1.5,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.5 + Math.random() * 1.5,
-    }));
-    // Fireflies
-    this.flies = Array.from({ length: 12 }, () => ({
-      x: Math.random() * (this.W || 400),
-      y: (0.45 + Math.random() * 0.35) * (this.H || 600),
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.3,
-      phase: Math.random() * Math.PI * 2,
-      size: 2 + Math.random() * 2,
-    }));
-    // Mist layers
-    this.mist = Array.from({ length: 3 }, (_, i) => ({
-      x: Math.random() * (this.W || 400),
-      speed: 0.1 + i * 0.08,
-      y: (0.55 + i * 0.06) * (this.H || 600),
-      alpha: 0.04 + i * 0.02,
-    }));
+    const W=this.W,H=this.H;
+    this.stars=Array.from({length:90},()=>({x:Math.random()*W,y:Math.random()*H*.65,r:.5+Math.random()*1.6,ph:Math.random()*Math.PI*2,sp:.5+Math.random()*1.8}));
+    this.flies=Array.from({length:14},()=>({x:Math.random()*W,y:H*(.45+Math.random()*.4),vx:(Math.random()-.5)*.55,vy:(Math.random()-.5)*.35,ph:Math.random()*Math.PI*2,sz:2+Math.random()*2.2}));
+    this.mist=Array.from({length:3},(_,i)=>({x:Math.random()*W,speed:.1+i*.08,y:H*(.55+i*.065),a:.05+i*.025}));
   }
-
   draw() {
-    const { ctx, W, H, t } = this;
-    ctx.clearRect(0, 0, W, H);
+    const {ctx,W,H,t}=this;
+    ctx.clearRect(0,0,W,H);
+    const gY=H*.62;
 
     // Night sky
-    const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.65);
-    skyG.addColorStop(0, '#000408');
-    skyG.addColorStop(0.4, '#010c18');
-    skyG.addColorStop(0.8, '#031525');
-    skyG.addColorStop(1, '#051e35');
-    ctx.fillStyle = skyG;
-    ctx.fillRect(0, 0, W, H);
+    const sg=ctx.createLinearGradient(0,0,0,H);
+    sg.addColorStop(0,'#000408'); sg.addColorStop(.4,'#010b16'); sg.addColorStop(.8,'#031422'); sg.addColorStop(1,'#051d32');
+    ctx.fillStyle=sg; ctx.fillRect(0,0,W,H);
 
-    // Stars (twinkling)
-    this.stars.forEach(s => {
-      const alpha = 0.4 + Math.sin(t * s.speed + s.phase) * 0.5;
-      const size = s.r * (0.8 + Math.sin(t * s.speed + s.phase) * 0.3);
-      ctx.fillStyle = `rgba(255,250,230,${alpha})`;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, size, 0, Math.PI * 2);
-      ctx.fill();
+    // Stars
+    this.stars.forEach(s=>{
+      const a=.35+Math.sin(t*s.sp+s.ph)*.5, r=s.r*(0.75+Math.sin(t*s.sp+s.ph)*.3);
+      ctx.fillStyle=`rgba(255,250,228,${a})`; ctx.beginPath(); ctx.arc(s.x,s.y,r,0,Math.PI*2); ctx.fill();
     });
 
     // Moon
-    const moonX = W * 0.78, moonY = H * 0.18;
-    const moonR = Math.min(W, H) * 0.08;
-    // Moon halo
-    const haloG = ctx.createRadialGradient(moonX, moonY, moonR, moonX, moonY, moonR * 3);
-    haloG.addColorStop(0, 'rgba(255,240,180,0.12)');
-    haloG.addColorStop(1, 'transparent');
-    ctx.fillStyle = haloG;
-    ctx.beginPath();
-    ctx.arc(moonX, moonY, moonR * 3, 0, Math.PI * 2);
-    ctx.fill();
-    // Moon body
-    ctx.fillStyle = '#FFF9E6';
-    ctx.beginPath();
-    ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
-    ctx.fill();
-    // Moon craters
-    ctx.fillStyle = 'rgba(200,190,150,0.3)';
-    [[0.3, -0.2, 0.15], [-0.2, 0.3, 0.1], [0.1, 0.1, 0.08]].forEach(([dx, dy, cr]) => {
-      ctx.beginPath();
-      ctx.arc(moonX + dx * moonR, moonY + dy * moonR, cr * moonR, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    // Moon reflection on ground
-    const reflG = ctx.createLinearGradient(moonX - 30, H * 0.62, moonX + 30, H);
-    reflG.addColorStop(0, 'rgba(255,240,150,0.08)');
-    reflG.addColorStop(1, 'transparent');
-    ctx.fillStyle = reflG;
-    ctx.fillRect(moonX - 25, H * 0.62, 50, H * 0.38);
+    const mx=W*.78, my=H*.17, mr=Math.min(W,H)*.078;
+    const halo=ctx.createRadialGradient(mx,my,mr,mx,my,mr*3.5);
+    halo.addColorStop(0,'rgba(255,240,175,.14)'); halo.addColorStop(1,'transparent');
+    ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(mx,my,mr*3.5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#FFF9E6'; ctx.beginPath(); ctx.arc(mx,my,mr,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(195,185,148,.3)';
+    [[.3,-.2,.15],[-.2,.3,.1],[.1,.1,.08]].forEach(([dx,dy,cr])=>{ctx.beginPath();ctx.arc(mx+dx*mr,my+dy*mr,cr*mr,0,Math.PI*2);ctx.fill();});
 
     // Ground
-    const groundY = H * 0.62;
-    const groundG = ctx.createLinearGradient(0, groundY, 0, H);
-    groundG.addColorStop(0, '#081408');
-    groundG.addColorStop(0.5, '#040e04');
-    groundG.addColorStop(1, '#020802');
-    ctx.fillStyle = groundG;
-    ctx.fillRect(0, groundY, W, H - groundY);
+    const gg=ctx.createLinearGradient(0,gY,0,H);
+    gg.addColorStop(0,'#071307'); gg.addColorStop(.5,'#040d04'); gg.addColorStop(1,'#020602');
+    ctx.fillStyle=gg; ctx.fillRect(0,gY,W,H-gY);
 
-    // Silhouette trees
-    ctx.fillStyle = 'rgba(2,8,2,0.95)';
-    [[0.03, 0.35], [0.07, 0.28], [0.88, 0.32], [0.93, 0.26], [0.97, 0.30]].forEach(([px, ph]) => {
-      const tx = px * W, th = ph * H;
-      const ty = groundY - th;
-      // Trunk
-      ctx.fillRect(tx - 3, ty + th * 0.6, 6, th * 0.4);
-      // Triangle top (pine)
-      ctx.beginPath();
-      ctx.moveTo(tx, ty);
-      ctx.lineTo(tx - th * 0.22, ty + th * 0.7);
-      ctx.lineTo(tx + th * 0.22, ty + th * 0.7);
-      ctx.closePath();
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(tx, ty + th * 0.2);
-      ctx.lineTo(tx - th * 0.28, ty + th * 0.85);
-      ctx.lineTo(tx + th * 0.28, ty + th * 0.85);
-      ctx.closePath();
-      ctx.fill();
+    // Tree silhouettes
+    ctx.fillStyle='rgba(2,7,2,.96)';
+    [[.03,.35],[.07,.28],[.88,.3],[.93,.25],[.97,.32]].forEach(([px,ph])=>{
+      const tx=px*W,th=ph*H;
+      ctx.fillRect(tx-3,gY-th*.1+th*.6,6,th*.4);
+      ctx.beginPath(); ctx.moveTo(tx,gY-th); ctx.lineTo(tx-th*.2,gY-th*.3); ctx.lineTo(tx+th*.2,gY-th*.3); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(tx,gY-th*.7); ctx.lineTo(tx-th*.26,gY-th*.05); ctx.lineTo(tx+th*.26,gY-th*.05); ctx.closePath(); ctx.fill();
     });
 
     // Mist
-    this.mist.forEach(m => {
-      m.x += m.speed;
-      if (m.x > W + 200) m.x = -200;
-      const mg = ctx.createLinearGradient(m.x - 100, 0, m.x + 200, 0);
-      mg.addColorStop(0, 'transparent');
-      mg.addColorStop(0.3, `rgba(150,180,200,${m.alpha})`);
-      mg.addColorStop(0.7, `rgba(150,180,200,${m.alpha})`);
-      mg.addColorStop(1, 'transparent');
-      ctx.fillStyle = mg;
-      ctx.fillRect(0, m.y - 15, W, 30);
+    this.mist.forEach(m=>{
+      m.x+=m.speed; if(m.x>W+200) m.x=-200;
+      const mg=ctx.createLinearGradient(m.x-100,0,m.x+200,0);
+      mg.addColorStop(0,'transparent'); mg.addColorStop(.35,`rgba(140,170,195,${m.a})`); mg.addColorStop(.65,`rgba(140,170,195,${m.a})`); mg.addColorStop(1,'transparent');
+      ctx.fillStyle=mg; ctx.fillRect(0,m.y-18,W,36);
     });
 
     // Fireflies
-    this.flies.forEach(fly => {
-      fly.x += fly.vx + Math.sin(t * 0.8 + fly.phase) * 0.3;
-      fly.y += fly.vy + Math.cos(t * 0.6 + fly.phase) * 0.2;
-      fly.phase += 0.02;
-      // Bounce off edges
-      if (fly.x < 0 || fly.x > W) fly.vx *= -1;
-      if (fly.y < groundY * 0.7 || fly.y > H * 0.92) fly.vy *= -1;
-      const glow = 0.5 + Math.sin(t * 3 + fly.phase) * 0.5;
-      const g = ctx.createRadialGradient(fly.x, fly.y, 0, fly.x, fly.y, fly.size * 4);
-      g.addColorStop(0, `rgba(180,255,100,${glow * 0.9})`);
-      g.addColorStop(0.4, `rgba(140,220,80,${glow * 0.4})`);
-      g.addColorStop(1, 'transparent');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(fly.x, fly.y, fly.size * 4, 0, Math.PI * 2);
-      ctx.fill();
+    this.flies.forEach(f=>{
+      f.x+=f.vx+Math.sin(t*.9+f.ph)*.35; f.y+=f.vy+Math.cos(t*.7+f.ph)*.22; f.ph+=.02;
+      if(f.x<0||f.x>W) f.vx*=-1; if(f.y<gY*.7||f.y>H*.93) f.vy*=-1;
+      const glow=.45+Math.sin(t*3.5+f.ph)*.5;
+      const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.sz*5);
+      g.addColorStop(0,`rgba(175,255,90,${glow*.95})`); g.addColorStop(.4,`rgba(140,220,75,${glow*.4})`); g.addColorStop(1,'transparent');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(f.x,f.y,f.sz*5,0,Math.PI*2); ctx.fill();
     });
   }
 }
 
-// ── GALAXIA (Space) ──────────────────────────────────────
-class ScenaGalaxia extends ScenarioCanvas {
-  setupParticles() {
-    this.stars = Array.from({ length: 120 }, () => ({
-      x: Math.random() * (this.W || 400),
-      y: Math.random() * (this.H || 600) * 0.7,
-      r: 0.3 + Math.random() * 1.8,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.3 + Math.random() * 2,
-      color: Math.random() < 0.2 ? '200,220,255' : Math.random() < 0.1 ? '255,200,200' : '255,255,255',
-    }));
-    this.nebulas = [
-      { x: 0.3, y: 0.3, rx: 0.25, ry: 0.15, color: '80,30,120', phase: 0 },
-      { x: 0.7, y: 0.2, rx: 0.2, ry: 0.12, color: '20,60,120', phase: 1 },
-      { x: 0.5, y: 0.45, rx: 0.18, ry: 0.1, color: '120,20,60', phase: 2 },
-    ];
-    this.meteors = [];
-    this.meteorTimer = 0;
-  }
-
-  draw() {
-    const { ctx, W, H, t } = this;
-    ctx.clearRect(0, 0, W, H);
-
-    // Deep space background
-    const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.7);
-    skyG.addColorStop(0, '#000005');
-    skyG.addColorStop(0.5, '#020010');
-    skyG.addColorStop(1, '#050018');
-    ctx.fillStyle = skyG;
-    ctx.fillRect(0, 0, W, H);
-
-    // Nebulae
-    this.nebulas.forEach(nb => {
-      const pulse = 1 + Math.sin(t * 0.4 + nb.phase) * 0.1;
-      const g = ctx.createRadialGradient(nb.x * W, nb.y * H, 0, nb.x * W, nb.y * H, nb.rx * W * pulse);
-      g.addColorStop(0, `rgba(${nb.color},0.18)`);
-      g.addColorStop(0.5, `rgba(${nb.color},0.08)`);
-      g.addColorStop(1, 'transparent');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.ellipse(nb.x * W, nb.y * H, nb.rx * W * pulse, nb.ry * H * pulse, 0, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Stars
-    this.stars.forEach(s => {
-      const alpha = 0.3 + Math.sin(t * s.speed + s.phase) * 0.5;
-      const size = s.r * (0.7 + Math.sin(t * s.speed + s.phase) * 0.4);
-      ctx.fillStyle = `rgba(${s.color},${alpha})`;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, size, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Occasional meteors
-    this.meteorTimer += 0.016;
-    if (this.meteorTimer > 3 + Math.random() * 4) {
-      this.meteorTimer = 0;
-      this.meteors.push({ x: Math.random() * W, y: 0, vx: 3 + Math.random() * 4, vy: 2 + Math.random() * 3, life: 1 });
-    }
-    this.meteors = this.meteors.filter(m => {
-      m.x += m.vx; m.y += m.vy; m.life -= 0.025;
-      if (m.life <= 0) return false;
-      ctx.strokeStyle = `rgba(200,220,255,${m.life * 0.8})`;
-      ctx.lineWidth = m.life * 2;
-      ctx.beginPath();
-      ctx.moveTo(m.x, m.y);
-      ctx.lineTo(m.x - m.vx * 8, m.y - m.vy * 8);
-      ctx.stroke();
-      return true;
-    });
-
-    // "Ground" — deep space floor
-    const groundY = H * 0.65;
-    const groundG = ctx.createLinearGradient(0, groundY, 0, H);
-    groundG.addColorStop(0, '#0a0520');
-    groundG.addColorStop(0.5, '#060310');
-    groundG.addColorStop(1, '#020108');
-    ctx.fillStyle = groundG;
-    ctx.fillRect(0, groundY, W, H - groundY);
-
-    // Asteroid/rock silhouettes on ground
-    ctx.fillStyle = 'rgba(15,10,30,0.9)';
-    [[0.05, 0.08], [0.15, 0.06], [0.78, 0.07], [0.88, 0.05], [0.95, 0.06]].forEach(([px, ph]) => {
-      ctx.beginPath();
-      ctx.ellipse(px * W, groundY, ph * W, ph * H * 0.4, 0, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Thunder storm effect (matches weather system)
-    if (Math.random() < 0.002) {
-      ctx.fillStyle = 'rgba(150,180,255,0.06)';
-      ctx.fillRect(0, 0, W, H);
-    }
-  }
-}
-
-// ── CAMPO (Field) ────────────────────────────────────────
-class ScenaCampo extends ScenarioCanvas {
-  setupParticles() {
-    this.clouds = Array.from({ length: 5 }, (_, i) => ({
-      x: (i / 5) * (this.W || 400),
-      y: (0.1 + Math.random() * 0.15) * (this.H || 600),
-      w: 70 + Math.random() * 60,
-      speed: 0.2 + Math.random() * 0.15,
-      alpha: 0.85 + Math.random() * 0.15,
-    }));
-    this.grass = Array.from({ length: 40 }, () => ({
-      x: Math.random() * (this.W || 400),
-      h: 8 + Math.random() * 12,
-      phase: Math.random() * Math.PI * 2,
-    }));
-    this.birds = Array.from({ length: 4 }, () => ({
-      x: Math.random() * (this.W || 400),
-      y: (0.15 + Math.random() * 0.2) * (this.H || 600),
-      vx: 0.4 + Math.random() * 0.5,
-      phase: Math.random() * Math.PI * 2,
-    }));
-  }
-
-  draw() {
-    const { ctx, W, H, t } = this;
-    ctx.clearRect(0, 0, W, H);
-
-    // Sky
-    const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.65);
-    skyG.addColorStop(0, '#4AA8D8');
-    skyG.addColorStop(0.5, '#87CEEB');
-    skyG.addColorStop(1, '#B0E0FF');
-    ctx.fillStyle = skyG;
-    ctx.fillRect(0, 0, W, H);
-
-    // Sun
-    const sunX = W * 0.75, sunY = H * 0.12;
-    const sunG = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 40);
-    sunG.addColorStop(0, 'rgba(255,255,200,0.9)');
-    sunG.addColorStop(0.4, 'rgba(255,230,100,0.5)');
-    sunG.addColorStop(1, 'transparent');
-    ctx.fillStyle = sunG;
-    ctx.beginPath(); ctx.arc(sunX, sunY, 40, 0, Math.PI * 2); ctx.fill();
-
-    // Clouds
-    this.clouds.forEach(cl => {
-      cl.x += cl.speed;
-      if (cl.x > W + cl.w * 1.5) cl.x = -cl.w;
-      ctx.fillStyle = `rgba(255,255,255,${cl.alpha})`;
-      [[0, 0, 1], [-0.35, 0.1, 0.7], [0.35, 0.1, 0.65], [-0.15, -0.25, 0.6], [0.2, -0.2, 0.55]].forEach(([dx, dy, s]) => {
-        ctx.beginPath();
-        ctx.ellipse(cl.x + dx * cl.w, cl.y + dy * cl.w * 0.4, cl.w * 0.38 * s, cl.w * 0.2 * s, 0, 0, Math.PI * 2);
-        ctx.fill();
-      });
-    });
-
-    // Trees on horizon
-    const groundY = H * 0.62;
-    [[0.02, 0.22], [0.08, 0.18], [0.88, 0.2], [0.94, 0.16], [0.98, 0.19]].forEach(([px, ph]) => {
-      const tx = px * W, th = ph * H;
-      ctx.fillStyle = '#1a5c1a';
-      ctx.beginPath();
-      ctx.ellipse(tx, groundY - th * 0.5, th * 0.28, th * 0.55, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#0f3d0f';
-      ctx.fillRect(tx - 4, groundY - th * 0.1, 8, th * 0.1);
-    });
-
-    // Ground
-    const groundG = ctx.createLinearGradient(0, groundY, 0, H);
-    groundG.addColorStop(0, '#3a7a3a');
-    groundG.addColorStop(0.3, '#2d6a2d');
-    groundG.addColorStop(0.7, '#1f5a1f');
-    groundG.addColorStop(1, '#144a14');
-    ctx.fillStyle = groundG;
-    ctx.fillRect(0, groundY, W, H - groundY);
-
-    // Grass blades
-    ctx.strokeStyle = '#4a9a4a';
-    ctx.lineWidth = 1.2;
-    this.grass.forEach(g => {
-      const sway = Math.sin(t * 1.2 + g.phase) * 3;
-      ctx.beginPath();
-      ctx.moveTo(g.x, groundY);
-      ctx.quadraticCurveTo(g.x + sway, groundY - g.h * 0.6, g.x + sway * 1.5, groundY - g.h);
-      ctx.stroke();
-    });
-
-    // Birds
-    this.birds.forEach(b => {
-      b.x += b.vx;
-      b.phase += 0.1;
-      if (b.x > W + 20) b.x = -20;
-      const wy = Math.sin(b.phase) * 3;
-      ctx.strokeStyle = 'rgba(20,20,20,0.6)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(b.x - 6, b.y + wy);
-      ctx.quadraticCurveTo(b.x, b.y - 3, b.x + 6, b.y + wy);
-      ctx.stroke();
-    });
-  }
-}
-
-// ── ESTADIO (Stadium) ────────────────────────────────────
-class ScenaEstadio extends ScenarioCanvas {
-  setupParticles() {
-    this.spotlights = [
-      { x: 0.2, phase: 0 }, { x: 0.5, phase: Math.PI }, { x: 0.8, phase: Math.PI * 0.5 }
-    ];
-    this.crowd = Array.from({ length: 60 }, () => ({
-      x: Math.random(),
-      row: Math.floor(Math.random() * 4),
-      phase: Math.random() * Math.PI * 2,
-      color: `hsl(${Math.random() * 360},70%,60%)`,
-    }));
-    this.flashes = [];
-    this.flashTimer = 0;
-  }
-
-  draw() {
-    const { ctx, W, H, t } = this;
-    ctx.clearRect(0, 0, W, H);
-
-    // Dark stadium background
-    const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.65);
-    skyG.addColorStop(0, '#060810');
-    skyG.addColorStop(0.5, '#0a0f1e');
-    skyG.addColorStop(1, '#0f1830');
-    ctx.fillStyle = skyG;
-    ctx.fillRect(0, 0, W, H);
-
-    // Crowd stands (back)
-    const rowH = H * 0.07;
-    for (let row = 0; row < 4; row++) {
-      const ry = H * (0.08 + row * 0.07);
-      ctx.fillStyle = `rgba(15,20,40,0.8)`;
-      ctx.fillRect(0, ry, W, rowH);
-      // Crowd members
-      this.crowd.filter(c => c.row === row).forEach(c => {
-        const cx = c.x * W;
-        const wave = Math.sin(t * 1.5 + c.phase) * 3;
-        ctx.fillStyle = c.color.replace('60%', `${40 + Math.sin(t + c.phase) * 15}%`);
-        ctx.beginPath();
-        ctx.arc(cx, ry + rowH * 0.3 + wave, 3, 0, Math.PI * 2);
-        ctx.fill();
-      });
-    }
-
-    // Spotlights
-    this.spotlights.forEach(sl => {
-      sl.phase += 0.008;
-      const sweep = Math.sin(sl.phase) * 0.15;
-      const sx = (sl.x + sweep) * W;
-      const g = ctx.createConicalGradient ? null : ctx.createLinearGradient(sx, 0, sx, H * 0.7);
-      // Use radial approximation
-      const lg = ctx.createRadialGradient(sx, 0, 0, sx, H * 0.6, H * 0.35);
-      lg.addColorStop(0, 'rgba(220,230,255,0.12)');
-      lg.addColorStop(0.3, 'rgba(180,200,255,0.06)');
-      lg.addColorStop(1, 'transparent');
-      ctx.fillStyle = lg;
-      ctx.beginPath();
-      ctx.moveTo(sx, 0);
-      ctx.lineTo(sx - H * 0.2, H * 0.6);
-      ctx.lineTo(sx + H * 0.2, H * 0.6);
-      ctx.closePath();
-      ctx.fill();
-    });
-
-    // Photo flashes
-    this.flashTimer += 0.016;
-    if (this.flashTimer > 0.5 + Math.random() * 2) {
-      this.flashTimer = 0;
-      this.flashes.push({ x: Math.random() * W, y: Math.random() * H * 0.35, life: 1 });
-    }
-    this.flashes = this.flashes.filter(fl => {
-      fl.life -= 0.08;
-      if (fl.life <= 0) return false;
-      ctx.fillStyle = `rgba(255,255,255,${fl.life * 0.6})`;
-      ctx.beginPath();
-      ctx.arc(fl.x, fl.y, fl.life * 4, 0, Math.PI * 2);
-      ctx.fill();
-      return true;
-    });
-
-    // Battle arena floor
-    const groundY = H * 0.62;
-    const floorG = ctx.createLinearGradient(0, groundY, 0, H);
-    floorG.addColorStop(0, '#1a2040');
-    floorG.addColorStop(0.4, '#101525');
-    floorG.addColorStop(1, '#080d18');
-    ctx.fillStyle = floorG;
-    ctx.fillRect(0, groundY, W, H - groundY);
-
-    // Arena circle
-    ctx.strokeStyle = 'rgba(59,130,246,0.4)';
-    ctx.lineWidth = 2;
-    const glow = 0.3 + Math.sin(t * 2) * 0.1;
-    ctx.shadowColor = '#3B82F6';
-    ctx.shadowBlur = 8 * glow;
-    ctx.beginPath();
-    ctx.ellipse(W * 0.5, groundY + H * 0.06, W * 0.38, H * 0.05, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-  }
-}
-
-// ── FÚTBOL (Football) ────────────────────────────────────
-class ScenaFutbol extends ScenaCampo {
-  // Extends campo but with football pitch instead of grass
-  draw() {
-    const { ctx, W, H, t } = this;
-    ctx.clearRect(0, 0, W, H);
-
-    // Sky (afternoon)
-    const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.65);
-    skyG.addColorStop(0, '#1a3a6e');
-    skyG.addColorStop(0.4, '#2e6db4');
-    skyG.addColorStop(1, '#87CEEB');
-    ctx.fillStyle = skyG;
-    ctx.fillRect(0, 0, W, H);
-
-    // Clouds
-    this.clouds.forEach(cl => {
-      cl.x += cl.speed * 0.7;
-      if (cl.x > W + cl.w) cl.x = -cl.w;
-      ctx.fillStyle = `rgba(255,255,255,${cl.alpha})`;
-      ctx.beginPath();
-      ctx.ellipse(cl.x, cl.y, cl.w * 0.45, cl.w * 0.22, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(cl.x - cl.w * 0.28, cl.y + 5, cl.w * 0.32, cl.w * 0.18, 0, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    const groundY = H * 0.62;
-
-    // Football pitch stripes
-    for (let i = 0; i < 8; i++) {
-      const py = groundY + (i / 8) * (H - groundY);
-      const ph = (H - groundY) / 8;
-      ctx.fillStyle = i % 2 === 0 ? '#1a5c1a' : '#165016';
-      ctx.fillRect(0, py, W, ph);
-    }
-
-    // Pitch markings
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.lineWidth = 1.5;
-    // Center line
-    ctx.beginPath();
-    ctx.moveTo(W * 0.5, groundY);
-    ctx.lineTo(W * 0.5, H);
-    ctx.stroke();
-    // Center circle
-    ctx.beginPath();
-    ctx.ellipse(W * 0.5, groundY + H * 0.12, W * 0.15, H * 0.07, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    // Penalty boxes
-    ctx.strokeRect(W * 0.08, groundY, W * 0.18, H * 0.15);
-    ctx.strokeRect(W * 0.74, groundY, W * 0.18, H * 0.15);
-    // Goal areas
-    ctx.strokeRect(W * 0.14, groundY, W * 0.06, H * 0.07);
-    ctx.strokeRect(W * 0.8, groundY, W * 0.06, H * 0.07);
-  }
-}
-
-// ── Dispatcher — replaces sceneSVG for canvas scenarios ─
+// ══════════════════════════════════════════════════════════
+// Dispatcher
+// ══════════════════════════════════════════════════════════
 const CANVAS_SCENES = {
+  campo: ScenaCampo,
+  galaxia: ScenaGalaxia,
+  estadio: ScenaEstadio,
+  futbol: ScenaFutbol,
   cueva: ScenaCueva,
   playa: ScenaPlaya,
   noche: ScenaNoche,
-  galaxia: ScenaGalaxia,
-  campo: ScenaCampo,
-  estadio: ScenaEstadio,
-  futbol: ScenaFutbol,
 };
 
 let _activeScene = null;
 
-function initCanvasScene(sceneName) {
-  // Destroy previous
-  if (_activeScene) {
-    _activeScene.destroy();
-    _activeScene = null;
-  }
-  const SceneClass = CANVAS_SCENES[sceneName];
-  if (!SceneClass) return;
-  _activeScene = new SceneClass('scene-canvas', {});
-  // Small delay to let canvas mount in DOM
-  setTimeout(() => { if (_activeScene) _activeScene.init(); }, 50);
+function initCanvasScene(sceneName, canvasId) {
+  if (_activeScene) { _activeScene.destroy(); _activeScene = null; }
+  const Cls = CANVAS_SCENES[sceneName];
+  if (!Cls) return;
+  const id = canvasId || 'scene-canvas';
+  _activeScene = new Cls(id, {});
+  // Retry until canvas has dimensions
+  let tries = 0;
+  const go = () => {
+    const c = document.getElementById(id);
+    const hasSize = c && (c.offsetWidth > 0 || (c.parentElement && c.parentElement.offsetWidth > 0));
+    if (hasSize || tries++ > 10) { if (_activeScene) _activeScene.init(); }
+    else setTimeout(go, 60);
+  };
+  setTimeout(go, 30);
 }
 
 function destroyCanvasScene() {
